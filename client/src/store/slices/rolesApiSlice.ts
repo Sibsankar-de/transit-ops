@@ -1,14 +1,30 @@
 import { apiSlice } from "../apiSlice";
-import { Role, ApiResponse, CreateRoleInput, UpdateRoleInput } from "@/types/api";
+import { 
+  Role, 
+  ApiResponse, 
+  PaginatedResponse,
+  CreateRoleInput, 
+  UpdateRoleInput,
+  ListRolesParams
+} from "@/types/api";
 
 export const rolesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getRoles: builder.query<ApiResponse<Role[]>, void>({
-      query: () => "/roles",
+    getRoles: builder.query<ApiResponse<PaginatedResponse<Role>>, ListRolesParams | void>({
+      query: (params = {}) => ({
+        url: "/roles",
+        params: {
+          page: params?.page ?? 1,
+          limit: params?.limit ?? 10,
+          ...(params?.search && { search: params.search }),
+          ...(params?.sortBy && { sortBy: params.sortBy }),
+          ...(params?.sortOrder && { sortOrder: params.sortOrder }),
+        },
+      }),
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map(({ id }) => ({ type: "Role" as const, id })),
+              ...result.data.docs.map(({ id }) => ({ type: "Role" as const, id })),
               { type: "Role" as const, id: "LIST" },
             ]
           : [{ type: "Role" as const, id: "LIST" }],
