@@ -1,9 +1,6 @@
-import Image from "next/image";
+import { redirect } from "next/navigation";
+import React from "react";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans">
-      Welcome to TransitOps
-    </div>
-  );
-}
+export const page = () => {
+  redirect("/dashboard");
+};
