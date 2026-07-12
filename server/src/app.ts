@@ -10,6 +10,7 @@ import roleRouter from "./routes/role.route";
 import vehicleRouter from "./routes/vehicle.route";
 import driverRouter from "./routes/driver.route";
 import tripRouter from "./routes/trip.route";
+import maintenanceRouter from "./routes/maintenance.route";
 
 const app = express();
 
@@ -31,12 +32,12 @@ app.use(express.static("public"));
 
 app.use(morgan("dev"));
 
-// ── Routes ───────────────────────────────────────────────────────────────────
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/roles", roleRouter);
 app.use("/api/v1/vehicles", vehicleRouter);
 app.use("/api/v1/drivers", driverRouter);
 app.use("/api/v1/trips", tripRouter);
+app.use("/api/v1/maintenance", maintenanceRouter);
 
 // error middleware
 app.use(errorMiddleware);

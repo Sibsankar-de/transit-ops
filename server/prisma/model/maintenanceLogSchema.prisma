@@ -11,7 +11,8 @@ model MaintenanceLog {
   status      MaintenanceStatus @default(OPEN)
   startDate   DateTime          @default(now())
   endDate     DateTime?
-  createdAt   DateTime          @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   vehicle Vehicle @relation(fields: [vehicleId], references: [id])
 }
