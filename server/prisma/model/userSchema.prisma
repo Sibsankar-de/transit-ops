@@ -1,13 +1,15 @@
-enum UserStatus { ACTIVE INACTIVE SUSPENDED }
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
 
 model User {
-  id           String   @id @default(uuid())
+  id           String     @id @default(uuid())
   name         String
-  email        String   @unique
+  email        String     @unique
   passwordHash String
-  roleId       String
-  role         Role     @relation(fields: [roleId], references: [id])
   status       UserStatus @default(ACTIVE)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }

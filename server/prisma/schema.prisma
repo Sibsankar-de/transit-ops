@@ -5,7 +5,3 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
-import "./model/userSchema.prisma"
-import "./model/vehicleSchema.prisma"
-import "./model/driverSchema.prisma"
