@@ -1,38 +1,32 @@
+enum TripStatus { 
+    DRAFT 
+    DISPATCHED 
+    COMPLETED 
+    CANCELLED
+}
+
 model Trip {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(uuid())
+  source          String
+  destination     String
+  vehicleId       String
+  driverId        String
+  cargoWeight     Decimal
+  plannedDistance Decimal
+  actualDistance  Decimal?
+  finalOdometer   Decimal?
+  fuelConsumed    Decimal?
+  revenue         Decimal? 
+  status          TripStatus @default(DRAFT)
+  dispatchedAt    DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
-
-  driverId String
-  driver   Driver @relation(fields: [driverId], references: [id])
+  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
+  driver          Driver   @relation(fields: [driverId], references: [id])
+  fuelLogs        FuelLog[]
 }
 
-model MaintenanceLog {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
-}
-
-model FuelLog {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
-}
-
-model Expense {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vehicleId String
-  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
-}
