@@ -5,6 +5,10 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { env } from "./configs/env";
 import { errorMiddleware } from "./middlewares/error.middleware";
+import userRouter from "./routes/user.route";
+import roleRouter from "./routes/role.route";
+import vehicleRouter from "./routes/vehicle.route";
+import driverRouter from "./routes/driver.route";
 
 const app = express();
 
@@ -25,6 +29,12 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 
 app.use(morgan("dev"));
+
+// ── Routes ───────────────────────────────────────────────────────────────────
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/roles", roleRouter);
+app.use("/api/v1/vehicles", vehicleRouter);
+app.use("/api/v1/drivers", driverRouter);
 
 // error middleware
 app.use(errorMiddleware);

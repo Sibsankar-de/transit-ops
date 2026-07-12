@@ -1,4 +1,0 @@
-# This file keeps the model/ directory tracked in git.
-# Add individual .prisma model files here, e.g.:
-#   model/user.prisma
-#   model/vehicle.prisma

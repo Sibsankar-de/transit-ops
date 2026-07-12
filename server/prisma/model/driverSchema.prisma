@@ -1,0 +1,20 @@
+enum DriverStatus {
+  AVAILABLE
+  ON_TRIP
+  OFF_DUTY
+  SUSPENDED
+}
+
+model Driver {
+  id                String       @id @default(uuid())
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id])
+  licenseNumber     String       @unique
+  licenseCategory   String
+  licenseExpiryDate DateTime
+  safetyScore       Decimal      @default(100)
+  status            DriverStatus @default(AVAILABLE)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  trips             Trip[]
+}
