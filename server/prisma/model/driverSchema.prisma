@@ -7,11 +7,11 @@ enum DriverStatus {
 
 model Driver {
   id                String       @id @default(uuid())
-  name              String
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id])
   licenseNumber     String       @unique
   licenseCategory   String
   licenseExpiryDate DateTime
-  contactNumber     String
   safetyScore       Decimal      @default(100)
   status            DriverStatus @default(AVAILABLE)
   createdAt         DateTime     @default(now())
