@@ -6,7 +6,7 @@ interface SkeletonProps {
 
 export const Skeleton = ({ className }: SkeletonProps) => {
   return (
-    <div className={cn("animate-pulse rounded-md bg-gray-200", className)} />
+    <div className={cn("animate-pulse rounded-md bg-secondary", className)} />
   );
 };
 
@@ -26,7 +26,7 @@ export const TableBodySkeleton = ({
   return (
     <>
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <tr key={rowIndex} className="border-b border-gray-100 last:border-0">
+        <tr key={rowIndex} className="border-b border-border last:border-0">
           {Array.from({ length: columns }).map((_, colIndex) => (
             <td key={colIndex} className="px-6 py-4">
               <Skeleton
@@ -48,7 +48,7 @@ export const TableSkeleton = ({
   return (
     <div className={cn("w-full overflow-hidden", className)}>
       <table className="w-full">
-        <thead className="bg-gray-50 border-b border-gray-200">
+        <thead className="bg-secondary border-b border-border">
           <tr>
             {Array.from({ length: columns }).map((_, i) => (
               <th key={i} className="px-6 py-4">
@@ -67,7 +67,7 @@ export const TableSkeleton = ({
 
 export const StoreCardSkeleton = () => {
   return (
-    <div className="bg-white rounded-lg border p-6 border-gray-200 flex justify-between items-baseline">
+    <div className="bg-card rounded-lg border p-6 border-border flex justify-between items-baseline">
       <div className="flex items-start gap-4">
         <Skeleton className="w-12 h-12 rounded-lg" />
         <div>
