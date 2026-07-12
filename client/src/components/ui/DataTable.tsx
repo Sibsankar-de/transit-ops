@@ -62,19 +62,19 @@ export function DataTable<TData>({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-secondary border-b border-border">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
                       className={cn(
-                        "px-6 py-4 text-sm font-semibold text-gray-700 group",
+                        "px-6 py-4 text-sm font-semibold text-muted-foreground group",
                         header.column.getCanSort() &&
-                          "cursor-pointer select-none hover:bg-gray-100 transition-colors",
+                          "cursor-pointer select-none hover:bg-muted transition-colors",
                         header.column.columnDef.meta?.className,
                       )}
                       onClick={header.column.getToggleSortingHandler()}
@@ -97,7 +97,7 @@ export function DataTable<TData>({
                               header.getContext(),
                             )}
                         {header.column.getCanSort() && (
-                          <div className="w-4 h-4 text-gray-400">
+                          <div className="w-4 h-4 text-muted-foreground">
                             {{
                               asc: <ArrowUp className="w-4 h-4" />,
                               desc: <ArrowDown className="w-4 h-4" />,
@@ -112,20 +112,20 @@ export function DataTable<TData>({
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {isLoading ? (
                 <TableBodySkeleton columns={columns.length} rows={5} />
               ) : table.getRowModel().rows.length > 0 ? (
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="hover:bg-secondary/40 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
                         className={cn(
-                          "px-6 py-4 text-sm text-gray-600",
+                          "px-6 py-4 text-sm text-foreground",
                           cell.column.columnDef.meta?.className,
                         )}
                       >
