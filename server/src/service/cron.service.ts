@@ -6,16 +6,12 @@ import { createModuleLogger } from "../utils/logger";
 const log = createModuleLogger(import.meta.url);
 
 /**
- * Finds all drivers whose license has expired (licenseExpiryDate < today)
- * and sends each of them an expiry notification email via the email queue.
- *
  * Runs every day at midnight (00:00) server time.
  */
 async function notifyExpiredLicenses(): Promise<void> {
   log.info("[cron] Running license expiry check...");
 
   const now = new Date();
-  // Normalize to start of today so we catch any license that expired before today
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   let expiredDrivers: Array<{
