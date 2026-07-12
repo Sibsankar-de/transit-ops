@@ -4,5 +4,6 @@ declare namespace NodeJS {
     CORS_ORIGIN: string;
     NODE_ENV: string;
     APP_DEBUG: string;
+    DATABASE_URL: string;
   }
 }
