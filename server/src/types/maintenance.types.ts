@@ -1,5 +1,6 @@
 import { MaintenanceStatus } from "../enums/maintenanceStatus.enum";
 import { VehicleModel } from "./vehicle.types";
+import { PaginatedResponse } from "./pagination.types";
 
 export type MaintenanceLogModel = {
   id: string;
@@ -17,13 +18,7 @@ export type MaintenanceLogWithVehicle = MaintenanceLogModel & {
   vehicle: VehicleModel;
 };
 
-export type PaginatedMaintenanceLogs = {
-  data: MaintenanceLogModel[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-};
+export type PaginatedMaintenanceLogs = PaginatedResponse<MaintenanceLogModel>;
 
 export type MaintenanceCostSummary = {
   vehicleId: string;

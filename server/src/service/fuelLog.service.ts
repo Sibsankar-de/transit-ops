@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
 import { toSafeFuelLog } from "../dto/fuelLog.dto";
 import { FuelLogModel } from "../types/fuelLog.types";
+import { PaginatedResponse } from "../types/pagination.types";
 import {
   CreateFuelLogInput,
   UpdateFuelLogInput,
@@ -114,7 +115,9 @@ export async function getFuelLog(fuelLogId: string): Promise<FuelLogModel> {
   return toSafeFuelLog(fuelLog);
 }
 
-export async function listFuelLogs(query: ListFuelLogsQuery) {
+export async function listFuelLogs(
+  query: ListFuelLogsQuery,
+): Promise<PaginatedResponse<FuelLogModel>> {
   const where: any = {};
   if (query.vehicleId) where.vehicleId = query.vehicleId;
   if (query.tripId) where.tripId = query.tripId;
@@ -138,13 +141,11 @@ export async function listFuelLogs(query: ListFuelLogsQuery) {
   ]);
 
   return {
-    data: fuelLogs.map(toSafeFuelLog),
-    pagination: {
-      total,
-      page: query.page,
-      limit: query.limit,
-      totalPages: Math.ceil(total / query.limit),
-    },
+    docs: fuelLogs.map(toSafeFuelLog),
+    limit: query.limit,
+    page: query.page,
+    totalDocs: total,
+    totalPages: Math.ceil(total / query.limit),
   };
 }
 

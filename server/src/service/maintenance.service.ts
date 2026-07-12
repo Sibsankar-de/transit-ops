@@ -197,10 +197,10 @@ export async function listMaintenanceLogs(
   ]);
 
   return {
-    data: logs.map(toSafeMaintenanceLog),
-    total,
-    page,
+    docs: logs.map(toSafeMaintenanceLog),
     limit,
+    page,
+    totalDocs: total,
     totalPages: Math.ceil(total / limit),
   };
 }

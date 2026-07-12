@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
 import { toSafeTrip } from "../dto/trip.dto";
 import { TripModel } from "../types/trip.types";
+import { PaginatedResponse } from "../types/pagination.types";
 import {
   CreateTripInput,
   CompleteTripInput,
@@ -229,7 +230,9 @@ export async function getTrip(tripId: string): Promise<TripModel> {
   return toSafeTrip(trip);
 }
 
-export async function listTrips(query: ListTripsQuery) {
+export async function listTrips(
+  query: ListTripsQuery,
+): Promise<PaginatedResponse<TripModel>> {
   const where: any = {};
 
   if (query.status) where.status = query.status;
@@ -256,12 +259,10 @@ export async function listTrips(query: ListTripsQuery) {
   ]);
 
   return {
-    data: trips.map(toSafeTrip),
-    pagination: {
-      total,
-      page: query.page,
-      limit: query.limit,
-      totalPages: Math.ceil(total / query.limit),
-    },
+    docs: trips.map(toSafeTrip),
+    limit: query.limit,
+    page: query.page,
+    totalDocs: total,
+    totalPages: Math.ceil(total / query.limit),
   };
 }

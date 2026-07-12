@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQuerySchema } from "./pagination.schema";
 import { MaintenanceStatus } from "../enums/maintenanceStatus.enum";
 
 export const createMaintenanceLogSchema = z.object({
@@ -28,9 +29,7 @@ export const listMaintenanceLogsSchema = z.object({
   status: z.nativeEnum(MaintenanceStatus).optional(),
   dateFrom: z.coerce.date({ message: "Invalid dateFrom" }).optional(),
   dateTo: z.coerce.date({ message: "Invalid dateTo" }).optional(),
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
-});
+}).merge(paginationQuerySchema);
 
 export const vehicleMaintenanceCostSchema = z.object({
   dateFrom: z.coerce.date({ message: "Invalid dateFrom" }).optional(),
