@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { useLoginMutation } from "@/store/slices/usersApiSlice";
+import { useToast } from "../ui/Toast";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -21,6 +22,7 @@ type SignInFormData = z.infer<typeof loginSchema>;
 export const SignInForm = () => {
   const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
+  const { error } = useToast();
 
   const {
     register,
@@ -61,7 +63,7 @@ export const SignInForm = () => {
         router.replace("/dashboard");
       }
     } catch (err: any) {
-      alert(err?.data?.message || "Invalid email or password");
+      error(err?.data?.message || "Invalid email or password");
     }
   };
 

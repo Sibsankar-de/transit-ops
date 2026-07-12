@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { SearchInput } from "./SearchInput";
 import { UserProfile } from "./UserProfile";
+import { Menu } from "lucide-react";
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard":        "Dashboard",
@@ -14,13 +15,21 @@ const PAGE_TITLES: Record<string, string> = {
   "/settings":         "Settings",
 };
 
-export function TopBar() {
+export function TopBar({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const pathname = usePathname();
   const title = PAGE_TITLES[pathname] ?? "TransitOps";
 
   return (
-    <header className="flex items-center h-[var(--topnav-height)] px-6 gap-4 bg-card border-b border-border shrink-0">
-      <h1 className="text-base font-bold text-foreground whitespace-nowrap w-40 shrink-0">
+    <header className="flex items-center h-[var(--topnav-height)] px-4 md:px-6 gap-4 bg-card border-b border-border shrink-0">
+      <button
+        onClick={onMenuToggle}
+        className="p-2 -ml-2 text-muted-foreground hover:text-foreground md:hidden cursor-pointer rounded-lg hover:bg-secondary transition-colors"
+        aria-label="Toggle navigation menu"
+      >
+        <Menu size={20} />
+      </button>
+
+      <h1 className="text-base font-bold text-foreground whitespace-nowrap w-24 sm:w-40 shrink-0">
         {title}
       </h1>
 

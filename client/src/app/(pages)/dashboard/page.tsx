@@ -166,27 +166,26 @@ export default function DashboardPage() {
         </div>
 
         {/* Date Filters */}
-        <div className="flex items-center gap-2">
-          <div className="w-35">
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e: any) => handleDateChange(e.target.value, "start")}
-            />
-          </div>
-          <span className="text-muted-foreground text-sm font-medium">to</span>
-          <div className="w-35">
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e: any) => handleDateChange(e.target.value, "end")}
-            />
-          </div>
+        <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2 text-foreground text-xs shadow-sm focus-within:ring-2 focus-within:ring-ring focus-within:border-primary">
+          <Calendar size={14} className="text-muted-foreground shrink-0" />
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e: any) => handleDateChange(e.target.value, "start")}
+            className="bg-transparent border-0 outline-none text-xs text-foreground p-0 w-[110px] focus:ring-0 focus:outline-none"
+          />
+          <span className="text-muted-foreground/60 text-xs font-semibold select-none px-1">to</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e: any) => handleDateChange(e.target.value, "end")}
+            className="bg-transparent border-0 outline-none text-xs text-foreground p-0 w-[110px] focus:ring-0 focus:outline-none"
+          />
         </div>
       </div>
 
       {/* Stats Cards Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4">
         <StatsCard
           title="Active Vehicles"
           value="84"

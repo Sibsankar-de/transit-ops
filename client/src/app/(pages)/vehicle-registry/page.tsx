@@ -2,10 +2,10 @@
 
 import React, { useState, useMemo } from "react";
 import {
-  ColumnDef,
-  SortingState,
-  PaginationState,
-} from "@tanstack/react-table";
+   ColumnDef,
+   SortingState,
+   PaginationState,
+ } from "@tanstack/react-table";
 import { FleetStatus } from "@/enums/fleetStatus.enum";
 import { DataTable } from "@/components/ui/DataTable";
 import { FleetStatusBadge } from "@/components/ui/FleetStatusBadge";
@@ -18,6 +18,26 @@ import { EditVehicleModal } from "@/components/vehicles/EditVehicleModal";
 import { VehicleFormValues } from "@/components/vehicles/VehicleForm";
 import { Eye, Pencil, Plus } from "lucide-react";
 import { cn } from "@/components/utils";
+import {
+  useGetVehiclesQuery,
+  useCreateVehicleMutation,
+  useUpdateVehicleMutation,
+  useDeleteVehicleMutation,
+} from "@/store/slices/vehiclesApiSlice";
+import { useToast } from "@/components/ui/Toast";
+import { VehicleStatus } from "@/types/api";
+
+function toFleetStatus(status: string): FleetStatus {
+  if (status === "ON_TRIP") return FleetStatus.ON_TRIP;
+  if (status === "IN_SHOP") return FleetStatus.IN_SHOP;
+  return status as FleetStatus;
+}
+
+function toVehicleStatus(status: FleetStatus): string {
+  if (status === FleetStatus.ON_TRIP) return "ON_TRIP";
+  if (status === FleetStatus.IN_SHOP) return "IN_SHOP";
+  return status;
+}
 
 interface Vehicle {
   id: string;
@@ -147,7 +167,7 @@ const INITIAL_VEHICLES: Vehicle[] = [
 const VEHICLE_TYPES = ["Truck", "Van", "Tanker"];
 
 export default function VehicleRegistryPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES);
+  const { success, error } = useToast();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -165,73 +185,72 @@ export default function VehicleRegistryPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
+  // RTK Query Mutations
+  const [createVehicle] = useCreateVehicleMutation();
+  const [updateVehicle] = useUpdateVehicleMutation();
+
+  // Background query to calculate correct status counts for Nairobi region fleet
+  const { data: allVehiclesResponse } = useGetVehiclesQuery({ page: 1, limit: 1000 });
+  const allVehicles = useMemo(() => allVehiclesResponse?.data?.docs ?? [], [allVehiclesResponse]);
+
   // Status Summary Counts
   const counts = useMemo(() => {
     return {
-      [FleetStatus.AVAILABLE]: vehicles.filter(
-        (v) => v.status === FleetStatus.AVAILABLE,
+      [FleetStatus.AVAILABLE]: allVehicles.filter(
+        (v) => toFleetStatus(v.status) === FleetStatus.AVAILABLE,
       ).length,
-      [FleetStatus.ON_TRIP]: vehicles.filter(
-        (v) => v.status === FleetStatus.ON_TRIP,
+      [FleetStatus.ON_TRIP]: allVehicles.filter(
+        (v) => toFleetStatus(v.status) === FleetStatus.ON_TRIP,
       ).length,
-      [FleetStatus.IN_SHOP]: vehicles.filter(
-        (v) => v.status === FleetStatus.IN_SHOP,
+      [FleetStatus.IN_SHOP]: allVehicles.filter(
+        (v) => toFleetStatus(v.status) === FleetStatus.IN_SHOP,
       ).length,
-      [FleetStatus.RETIRED]: vehicles.filter(
-        (v) => v.status === FleetStatus.RETIRED,
+      [FleetStatus.RETIRED]: allVehicles.filter(
+        (v) => toFleetStatus(v.status) === FleetStatus.RETIRED,
       ).length,
     };
-  }, [vehicles]);
+  }, [allVehicles]);
 
-  // Filtering Logic
-  const filteredVehicles = useMemo(() => {
-    return vehicles.filter((v) => {
-      const matchesSearch =
-        search === "" ||
-        v.registration.toLowerCase().includes(search.toLowerCase()) ||
-        v.make.toLowerCase().includes(search.toLowerCase()) ||
-        v.model.toLowerCase().includes(search.toLowerCase());
+  // Sorting columns mapped to server fields
+  const sortByMap: Record<string, "createdAt" | "name" | "odometer" | "acquisitionCost"> = {
+    registration: "name",
+    vehicle: "name",
+    type: "name",
+    capacity: "name",
+    odometer: "odometer",
+    acqCost: "acquisitionCost",
+  };
 
-      const matchesStatusDropdown =
-        statusFilter === "" || v.status === statusFilter;
-      const matchesStatusSummary =
-        selectedStatusSummary === null || v.status === selectedStatusSummary;
-      const matchesType = typeFilter === "" || v.type === typeFilter;
+  const sortBy = sorting.length > 0 ? (sortByMap[sorting[0].id] || "createdAt") : "createdAt";
+  const sortOrder = sorting.length > 0 ? (sorting[0].desc ? "desc" : "asc") : "desc";
 
-      return (
-        matchesSearch &&
-        matchesStatusDropdown &&
-        matchesStatusSummary &&
-        matchesType
-      );
-    });
-  }, [vehicles, search, statusFilter, selectedStatusSummary, typeFilter]);
+  // Server-side paginated, sorted query
+  const activeStatus = selectedStatusSummary || statusFilter;
+  const { data: response, isLoading } = useGetVehiclesQuery({
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
+    search: search || undefined,
+    status: activeStatus ? (toVehicleStatus(activeStatus as FleetStatus) as VehicleStatus) : undefined,
+    type: typeFilter || undefined,
+    sortBy,
+    sortOrder,
+  });
 
-  // Sorting and Pagination Logic
-  const sortedAndPaginatedVehicles = useMemo(() => {
-    let result = [...filteredVehicles];
+  const vehicles = useMemo(() => {
+    return (response?.data?.docs ?? []).map((v) => ({
+      id: v.id,
+      registration: v.registrationNumber,
+      make: v.name.split(" ")[0] || "",
+      model: v.name.split(" ").slice(1).join(" ") || "",
+      type: v.type,
+      capacity: v.maxLoadCapacity,
+      odometer: v.odometer,
+      acqCost: v.acquisitionCost,
+      status: toFleetStatus(v.status),
+    }));
+  }, [response]);
 
-    if (sorting.length > 0) {
-      const { id, desc } = sorting[0];
-      result.sort((a, b) => {
-        let valA = a[id as keyof Vehicle];
-        let valB = b[id as keyof Vehicle];
-
-        if (typeof valA === "string" && typeof valB === "string") {
-          return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
-        } else {
-          return desc
-            ? (valB as number) - (valA as number)
-            : (valA as number) - (valB as number);
-        }
-      });
-    }
-
-    const start = pagination.pageIndex * pagination.pageSize;
-    return result.slice(start, start + pagination.pageSize);
-  }, [filteredVehicles, sorting, pagination]);
-
-  const pageCount = Math.ceil(filteredVehicles.length / pagination.pageSize);
+  const pageCount = response?.data?.totalPages ?? 0;
 
   const columns = useMemo<ColumnDef<Vehicle>[]>(() => {
     return [
@@ -320,43 +339,44 @@ export default function VehicleRegistryPage() {
     ];
   }, []);
 
-  const handleAddVehicle = (data: VehicleFormValues) => {
-    const newVehicle: Vehicle = {
-      id: `v${Date.now()}`,
-      registration: data.registration,
-      make: data.make,
-      model: data.model,
-      type: data.type,
-      capacity: data.capacity,
-      odometer: data.odometer,
-      acqCost: data.acqCost,
-      status: data.status,
-    };
-    setVehicles((prev) => [newVehicle, ...prev]);
-    setAddModalOpen(false);
+  const handleAddVehicle = async (data: VehicleFormValues) => {
+    try {
+      await createVehicle({
+        name: `${data.make} ${data.model}`,
+        type: data.type,
+        maxLoadCapacity: data.capacity,
+        odometer: data.odometer,
+        acquisitionCost: data.acqCost,
+        region: "Nairobi",
+      }).unwrap();
+      setAddModalOpen(false);
+      success("Vehicle created successfully!");
+    } catch (err: any) {
+      error(err?.data?.message || "Failed to create vehicle.");
+    }
   };
 
-  const handleEditVehicle = (data: VehicleFormValues) => {
+  const handleEditVehicle = async (data: VehicleFormValues) => {
     if (!selectedVehicle) return;
-    setVehicles((prev) =>
-      prev.map((v) =>
-        v.id === selectedVehicle.id
-          ? {
-              ...v,
-              registration: data.registration,
-              make: data.make,
-              model: data.model,
-              type: data.type,
-              capacity: data.capacity,
-              odometer: data.odometer,
-              acqCost: data.acqCost,
-              status: data.status,
-            }
-          : v,
-      ),
-    );
-    setEditModalOpen(false);
-    setSelectedVehicle(null);
+    try {
+      await updateVehicle({
+        id: selectedVehicle.id,
+        data: {
+          name: `${data.make} ${data.model}`,
+          type: data.type,
+          maxLoadCapacity: data.capacity,
+          odometer: data.odometer,
+          acquisitionCost: data.acqCost,
+          region: "Nairobi",
+          status: toVehicleStatus(data.status) as VehicleStatus,
+        },
+      }).unwrap();
+      setEditModalOpen(false);
+      setSelectedVehicle(null);
+      success("Vehicle updated successfully!");
+    } catch (err: any) {
+      error(err?.data?.message || "Failed to update vehicle.");
+    }
   };
 
   const handlePillClick = (status: FleetStatus) => {
@@ -492,22 +512,28 @@ export default function VehicleRegistryPage() {
       </div>
 
       {/* Main Table */}
-      <DataTable
-        columns={columns}
-        data={sortedAndPaginatedVehicles}
-        pageCount={pageCount}
-        pagination={pagination}
-        onPaginationChange={setPagination}
-        sorting={sorting}
-        onSortingChange={setSorting}
-        emptyState={
-          <div className="flex flex-col items-center justify-center p-12 text-center">
-            <p className="text-muted-foreground text-sm">
-              No vehicles found matching filters.
-            </p>
-          </div>
-        }
-      />
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[300px]">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={vehicles}
+          pageCount={pageCount}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          emptyState={
+            <div className="flex flex-col items-center justify-center p-12 text-center">
+              <p className="text-muted-foreground text-sm">
+                No vehicles found matching filters.
+              </p>
+            </div>
+          }
+        />
+      )}
 
       {/* Modals */}
       <AddVehicleModal

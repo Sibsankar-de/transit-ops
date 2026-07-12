@@ -28,6 +28,8 @@ export const fuelLogsApiSlice = apiSlice.injectEndpoints({
           ...(params.tripId && { tripId: params.tripId }),
           ...(params.startDate && { startDate: params.startDate }),
           ...(params.endDate && { endDate: params.endDate }),
+          ...(params.sortBy && { sortBy: params.sortBy }),
+          ...(params.sortOrder && { sortOrder: params.sortOrder }),
         },
       }),
       providesTags: (result) =>

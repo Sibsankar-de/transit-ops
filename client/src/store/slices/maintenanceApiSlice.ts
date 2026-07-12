@@ -23,6 +23,9 @@ export const maintenanceApiSlice = apiSlice.injectEndpoints({
           ...(params.status && { status: params.status }),
           ...(params.dateFrom && { dateFrom: params.dateFrom }),
           ...(params.dateTo && { dateTo: params.dateTo }),
+          ...(params.search && { search: params.search }),
+          ...(params.sortBy && { sortBy: params.sortBy }),
+          ...(params.sortOrder && { sortOrder: params.sortOrder }),
         },
       }),
       providesTags: (result) =>

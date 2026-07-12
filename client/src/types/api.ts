@@ -236,7 +236,22 @@ export interface UpdateDriverInput {
   status?: DriverStatus;
 }
 
-export interface ListDriversParams extends PaginationParams {}
+export interface ListVehiclesParams extends PaginationParams {
+  search?: string;
+  status?: VehicleStatus;
+  type?: string;
+  region?: string;
+  sortBy?: "createdAt" | "name" | "odometer" | "acquisitionCost";
+  sortOrder?: "asc" | "desc";
+}
+
+export interface ListDriversParams extends PaginationParams {
+  search?: string;
+  status?: DriverStatus;
+  licenseCategory?: string;
+  sortBy?: "createdAt" | "licenseExpiryDate" | "safetyScore";
+  sortOrder?: "asc" | "desc";
+}
 
 // ---------------------------------------------------------------------------
 // Vehicle Input Types
@@ -284,6 +299,9 @@ export interface ListTripsParams extends PaginationParams {
   driverId?: string;
   startDate?: string;
   endDate?: string;
+  search?: string;
+  sortBy?: "createdAt" | "dispatchedAt" | "completedAt" | "plannedDistance";
+  sortOrder?: "asc" | "desc";
 }
 
 // ---------------------------------------------------------------------------
@@ -309,6 +327,9 @@ export interface ListMaintenanceLogsParams extends PaginationParams {
   status?: MaintenanceStatus;
   dateFrom?: string;
   dateTo?: string;
+  search?: string;
+  sortBy?: "createdAt" | "startDate" | "cost" | "description";
+  sortOrder?: "asc" | "desc";
 }
 
 // ---------------------------------------------------------------------------
@@ -333,6 +354,8 @@ export interface ListFuelLogsParams extends PaginationParams {
   tripId?: string;
   startDate?: string;
   endDate?: string;
+  sortBy?: "date" | "cost" | "liters" | "createdAt";
+  sortOrder?: "asc" | "desc";
 }
 
 // ---------------------------------------------------------------------------
@@ -359,4 +382,7 @@ export interface ListExpensesParams extends PaginationParams {
   type?: ExpenseType;
   startDate?: string;
   endDate?: string;
+  search?: string;
+  sortBy?: "date" | "amount" | "createdAt";
+  sortOrder?: "asc" | "desc";
 }
