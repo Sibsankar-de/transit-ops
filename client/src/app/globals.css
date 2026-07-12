@@ -57,3 +57,25 @@ body {
 .font-mono { font-family: 'JetBrains Mono', monospace; }
 
 .transition-all { transition: all 0.15s ease; }
+
+/* Hide default browser increase/decrease buttons for number inputs */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Invert webkit calendar picker icon for dark theme visibility */
+::-webkit-calendar-picker-indicator {
+  filter: invert(0.9) brightness(1.2);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+::-webkit-calendar-picker-indicator:hover {
+  background-color: var(--secondary);
+}
