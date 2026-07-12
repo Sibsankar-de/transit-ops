@@ -5,6 +5,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { env } from "./configs/env";
 import { errorMiddleware } from "./middlewares/error.middleware";
+import userRouter from "./routes/user.route";
 
 const app = express();
 
@@ -25,6 +26,9 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 
 app.use(morgan("dev"));
+
+// ── Routes ───────────────────────────────────────────────────────────────────
+app.use("/api/v1/users", userRouter);
 
 // error middleware
 app.use(errorMiddleware);
