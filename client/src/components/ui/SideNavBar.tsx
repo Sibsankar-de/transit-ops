@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  BarChart2,
   ChevronLeft,
   ChevronRight,
   DollarSign,
@@ -24,7 +23,6 @@ const NAV_ITEMS = [
   { label: "Trips", href: "/trips", icon: Route },
   { label: "Maintenance", href: "/maintainance", icon: Wrench },
   { label: "Fuel & Expenses", href: "/fuel-and-expense", icon: DollarSign },
-  { label: "Analytics", href: "/analytics", icon: BarChart2 },
   { label: "Settings", href: "/settings", icon: Settings },
 ] as const;
 
