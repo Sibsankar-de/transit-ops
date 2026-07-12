@@ -67,7 +67,10 @@ export async function loginUser(data: LoginInput): Promise<{
   refreshToken: string;
   user: SafeUser;
 }> {
-  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  const user = await prisma.user.findUnique({
+    where: { email: data.email },
+    include: { role: true },
+  });
 
   if (!user) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid email or password");
@@ -119,6 +122,7 @@ export async function updateUser(
   const updated = await prisma.user.update({
     where: { id: userId },
     data: { name: data.name },
+    include: { role: true },
   });
 
   return toSafeUser(updated);
