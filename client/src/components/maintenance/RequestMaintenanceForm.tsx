@@ -21,6 +21,7 @@ export type RequestFormValues = z.infer<typeof requestSchema>;
 
 interface RequestMaintenanceFormProps {
   onSubmit: (data: RequestFormValues) => void;
+  onCancel?: () => void;
   vehicles: { id: string; registration: string; make: string; model: string }[];
   isSubmitting?: boolean;
 }
@@ -35,6 +36,7 @@ const SERVICE_TYPES = [
 
 export function RequestMaintenanceForm({
   onSubmit,
+  onCancel,
   vehicles,
   isSubmitting = false,
 }: RequestMaintenanceFormProps) {
@@ -79,9 +81,7 @@ export function RequestMaintenanceForm({
   }));
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-xl bg-card rounded-xl border border-border p-6">
-      <h2 className="text-lg font-bold text-foreground mb-4">Request Maintenance Service</h2>
-
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
       <div className="space-y-4">
         <div>
           <Label htmlFor="vehicleId" required>
@@ -154,8 +154,13 @@ export function RequestMaintenanceForm({
         </div>
       </div>
 
-      <div className="pt-2">
-        <Button variant="primary" type="submit" loading={isSubmitting} className="w-full py-2.5">
+      <div className="flex justify-end gap-3 pt-4 border-t border-border">
+        {onCancel && (
+          <Button variant="outline" type="button" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+        <Button variant="primary" type="submit" loading={isSubmitting}>
           Submit Request
         </Button>
       </div>

@@ -5,8 +5,10 @@ import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { MaintenanceLog, MaintenanceStatus } from "@/types/api";
 import { DataTable } from "@/components/ui/DataTable";
 import { RequestMaintenanceForm, RequestFormValues } from "@/components/maintenance/RequestMaintenanceForm";
-import { Wrench, Calendar } from "lucide-react";
+import { Wrench, Calendar, Plus } from "lucide-react";
 import { cn } from "@/components/utils";
+import { Button } from "@/components/ui/Button";
+import { Modal, ModalHeader } from "@/components/ui/Modal";
 import {
   useListMaintenanceLogsQuery,
   useCreateMaintenanceLogMutation,
@@ -14,7 +16,7 @@ import {
 } from "@/store/slices/maintenanceApiSlice";
 import { useGetVehiclesQuery } from "@/store/slices/vehiclesApiSlice";
 
-const TABS = ["History", "Upcoming", "+ Request"];
+const TABS = ["History", "Upcoming"];
 
 const STATUS_STYLES: Record<MaintenanceStatus, string> = {
   [MaintenanceStatus.OPEN]: "bg-purple-500/15 text-purple-400 border border-purple-500/30",
@@ -24,6 +26,7 @@ const STATUS_STYLES: Record<MaintenanceStatus, string> = {
 
 export default function MaintenancePage() {
   const [activeTab, setActiveTab] = useState("History");
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
 
   const [historyPagination, setHistoryPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -34,7 +37,7 @@ export default function MaintenancePage() {
     pageSize: 10,
   });
 
-  // RTK Query — History: CLOSED + IN_PROGRESS logs
+  // RTK Query — History: CLOSED logs
   const {
     data: historyResponse,
     isLoading: isHistoryLoading,
@@ -64,7 +67,7 @@ export default function MaintenancePage() {
 
   const { data: vehiclesResponse } = useGetVehiclesQuery();
 
-  const [createMaintenanceLog] = useCreateMaintenanceLogMutation();
+  const [createMaintenanceLog, { isLoading: isCreating }] = useCreateMaintenanceLogMutation();
   const [closeMaintenanceLog] = useCloseMaintenanceLogMutation();
 
   const historyLogs = historyResponse?.data?.docs ?? [];
@@ -80,7 +83,7 @@ export default function MaintenancePage() {
     (vehiclesResponse?.data ?? []).map((v) => ({
       id: v.id,
       registration: v.registrationNumber,
-      make: v.type,   // using type as make (no separate make field in current Vehicle model)
+      make: v.type,   // using type as make
       model: v.name,  // using name as model
     })),
     [vehiclesResponse]
@@ -115,7 +118,7 @@ export default function MaintenancePage() {
       accessorKey: "vehicle",
       header: "Vehicle",
       cell: ({ row }) => (
-        <span className="font-semibold text-secondary-foreground">
+        <span className="font-semibold text-secondary-foreground text-sm">
           {row.original.vehicle?.registrationNumber ?? row.original.vehicleId}
         </span>
       ),
@@ -193,9 +196,10 @@ export default function MaintenancePage() {
       await createMaintenanceLog({
         vehicleId: data.vehicleId,
         description: data.description,
-        cost: 0, // Cost not collected in the request form; updated later when closing the log
+        cost: 0,
         startDate: data.date,
       }).unwrap();
+      setRequestModalOpen(false);
       setActiveTab("Upcoming");
     } catch (err: any) {
       alert(err?.data?.message ?? "Failed to create maintenance request.");
@@ -236,22 +240,33 @@ export default function MaintenancePage() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-lg border border-border/50 w-fit">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={cn(
-              "px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer",
-              activeTab === tab
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {tab}
-          </button>
-        ))}
+      {/* Tabs list with Request Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4">
+        <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-lg border border-border/50 w-fit">
+          {TABS.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={cn(
+                "px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer",
+                activeTab === tab
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <Button
+          variant="primary"
+          onClick={() => setRequestModalOpen(true)}
+          className="flex items-center gap-2 h-9 px-3 text-xs"
+        >
+          <Plus size={14} />
+          <span>Request Maintenance</span>
+        </Button>
       </div>
 
       {/* Tab Panels */}
@@ -272,7 +287,7 @@ export default function MaintenancePage() {
             </div>
           }
         />
-      ) : activeTab === "Upcoming" ? (
+      ) : (
         <div className="space-y-4 max-w-2xl">
           {upcomingLogs.map((item) => (
             <div
@@ -340,11 +355,6 @@ export default function MaintenancePage() {
             </div>
           )}
         </div>
-      ) : (
-        <RequestMaintenanceForm
-          onSubmit={handleRequestSubmit}
-          vehicles={vehicles}
-        />
       )}
 
       {isHistoryFetching && !isHistoryLoading && (
@@ -353,6 +363,25 @@ export default function MaintenancePage() {
           Refreshing...
         </div>
       )}
+
+      <Modal
+        openState={requestModalOpen}
+        onClose={() => setRequestModalOpen(false)}
+        header={
+          <ModalHeader
+            title="Request Maintenance"
+            subtitle="Create a new maintenance log request"
+          />
+        }
+        className="w-[95vw] max-w-150"
+      >
+        <RequestMaintenanceForm
+          onSubmit={handleRequestSubmit}
+          onCancel={() => setRequestModalOpen(false)}
+          vehicles={vehicles}
+          isSubmitting={isCreating}
+        />
+      </Modal>
     </div>
   );
 }
