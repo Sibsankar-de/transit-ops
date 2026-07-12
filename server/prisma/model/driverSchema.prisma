@@ -1,0 +1,16 @@
+enum DriverStatus { AVAILABLE ON_TRIP OFF_DUTY INACTIVE }
+
+model Driver {
+  id               String   @id @default(uuid())
+  name             String
+  licenseNumber    String   @unique
+  licenseCategory  String
+  licenseExpiryDate DateTime
+  contactNumber    String
+  safetyScore      Decimal  @default(100)
+  status           DriverStatus @default(AVAILABLE)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  trips            Trip[]
+}
