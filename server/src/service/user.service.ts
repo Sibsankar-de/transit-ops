@@ -14,6 +14,7 @@ import {
   UpdatePasswordInput,
 } from "../schemas/user.schema";
 import { toSafeUser } from "../dto/user.dto";
+import { sendUserInviteEmail } from "./email.service";
 
 const SALT_ROUNDS = 12;
 
@@ -29,7 +30,8 @@ export async function createUser(data: CreateUserInput): Promise<SafeUser> {
     );
   }
 
-  const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS);
+  const plainPassword = data.password;
+  const passwordHash = await bcrypt.hash(plainPassword, SALT_ROUNDS);
 
   const user = await prisma.user.create({
     data: {
@@ -39,7 +41,18 @@ export async function createUser(data: CreateUserInput): Promise<SafeUser> {
     },
   });
 
-  return toSafeUser(user);
+  const safeUser = toSafeUser(user);
+
+  sendUserInviteEmail({
+    name: safeUser.name,
+    email: safeUser.email,
+    password: plainPassword,
+    role: safeUser.role?.name ?? "User",
+  }).catch((err) => {
+    console.error("[email.service] Failed to enqueue invite email:", err);
+  });
+
+  return safeUser;
 }
 
 export async function loginUser(data: LoginInput): Promise<{

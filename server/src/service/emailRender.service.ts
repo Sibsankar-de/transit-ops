@@ -6,18 +6,15 @@ import { createModuleLogger } from "../utils/logger";
 
 const log = createModuleLogger(import.meta.url);
 
-// Options for rendering email
 interface RenderEmailOptions<T = Record<string, any>> {
   templateName: string;
   data: T;
 }
 
-// Resolve template path safely
 const getTemplatePath = (templateName: string) => {
-  return path.join(process.cwd(), "src/templates/emails", templateName);
+  return path.join(process.cwd(), "src/template/email", templateName);
 };
 
-// Read file safely
 const loadTemplate = async (filePath: string): Promise<string> => {
   try {
     return await fs.readFile(filePath, "utf-8");
@@ -26,7 +23,6 @@ const loadTemplate = async (filePath: string): Promise<string> => {
   }
 };
 
-// Compile Handlebars template
 const compileTemplate = <T>(source: string, data: T): string => {
   try {
     const template = Handlebars.compile(source);
@@ -36,7 +32,6 @@ const compileTemplate = <T>(source: string, data: T): string => {
   }
 };
 
-// Convert MJML to HTML
 const convertToHtml = async (mjml: string): Promise<string> => {
   const { html, errors } = await mjml2html(mjml, {
     validationLevel: "soft",

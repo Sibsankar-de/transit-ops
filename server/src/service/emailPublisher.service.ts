@@ -21,7 +21,6 @@ export async function publishEmailJob(job: EmailJob) {
 export async function startWorker() {
   const channel = await getChannel();
 
-  // control concurrency
   channel.prefetch(5);
 
   log.info("Email worker started...");
@@ -42,7 +41,6 @@ export async function startWorker() {
       } catch (err) {
         log.error("Email sending failed: " + err);
 
-        // retry
         channel.nack(msg, false, true);
       }
     },
