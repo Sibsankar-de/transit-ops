@@ -22,7 +22,9 @@ export async function sendUserInviteEmail(
     email: data.email,
     password: data.password,
     role: data.role,
-    loginUrl: data.loginUrl ?? `${process.env.APP_URL ?? "http://localhost:3000"}/login`,
+    loginUrl:
+      data.loginUrl ??
+      `${process.env.APP_URL ?? "http://localhost:3000"}/login`,
   };
 
   const html = await renderEmail({

@@ -1,12 +1,17 @@
 import { StatusCodes } from "http-status-codes";
 import { prisma } from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
-import { CreateVehicleInput, UpdateVehicleInput } from "../schemas/vehicle.schema";
+import {
+  CreateVehicleInput,
+  UpdateVehicleInput,
+} from "../schemas/vehicle.schema";
 import { toSafeVehicle } from "../dto/vehicle.dto";
 import { VehicleModel } from "../types/vehicle.types";
 import { generateSecureToken } from "../utils/tokenGenerator";
 
-export async function createVehicle(data: CreateVehicleInput): Promise<VehicleModel> {
+export async function createVehicle(
+  data: CreateVehicleInput,
+): Promise<VehicleModel> {
   const registrationNumber = generateSecureToken(64);
   const vehicle = await prisma.vehicle.create({
     data: {
@@ -23,8 +28,13 @@ export async function createVehicle(data: CreateVehicleInput): Promise<VehicleMo
   return toSafeVehicle(vehicle as unknown as VehicleModel);
 }
 
-export async function updateVehicle(vehicleId: string, data: UpdateVehicleInput): Promise<VehicleModel> {
-  const existing = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
+export async function updateVehicle(
+  vehicleId: string,
+  data: UpdateVehicleInput,
+): Promise<VehicleModel> {
+  const existing = await prisma.vehicle.findUnique({
+    where: { id: vehicleId },
+  });
 
   if (!existing) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Vehicle not found");
@@ -39,7 +49,9 @@ export async function updateVehicle(vehicleId: string, data: UpdateVehicleInput)
 }
 
 export async function deleteVehicle(vehicleId: string): Promise<void> {
-  const existing = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
+  const existing = await prisma.vehicle.findUnique({
+    where: { id: vehicleId },
+  });
 
   if (!existing) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Vehicle not found");

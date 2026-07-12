@@ -12,10 +12,35 @@ import {
 
 const router = Router();
 
-router.post("/", verifyJWT, requirePermission(Permission.ROLE_CREATE), createRoleHandler);
-router.get("/", verifyJWT, requirePermission(Permission.ROLE_READ), getRolesHandler);
-router.get("/:id", verifyJWT, requirePermission(Permission.ROLE_READ), getRoleByIdHandler);
-router.patch("/:id", verifyJWT, requirePermission(Permission.ROLE_UPDATE), updateRoleHandler);
-router.delete("/:id", verifyJWT, requirePermission(Permission.ROLE_DELETE), deleteRoleHandler);
+router.post(
+  "/",
+  verifyJWT,
+  requirePermission(Permission.ROLE_CREATE),
+  createRoleHandler,
+);
+router.get(
+  "/",
+  verifyJWT,
+  requirePermission(Permission.ROLE_READ),
+  getRolesHandler,
+);
+router.get(
+  "/:id",
+  verifyJWT,
+  requirePermission(Permission.ROLE_READ),
+  getRoleByIdHandler,
+);
+router.patch(
+  "/:id",
+  verifyJWT,
+  requirePermission(Permission.ROLE_UPDATE),
+  updateRoleHandler,
+);
+router.delete(
+  "/:id",
+  verifyJWT,
+  requirePermission(Permission.ROLE_DELETE),
+  deleteRoleHandler,
+);
 
 export default router;

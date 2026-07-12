@@ -3,7 +3,10 @@ import { StatusCodes } from "http-status-codes";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { validateBody } from "../utils/validate.utils";
-import { createDriverSchema, updateDriverSchema } from "../schemas/driver.schema";
+import {
+  createDriverSchema,
+  updateDriverSchema,
+} from "../schemas/driver.schema";
 import {
   createDriver,
   getDriverById,
@@ -19,7 +22,13 @@ export const createDriverHandler = asyncHandler(
 
     return res
       .status(StatusCodes.CREATED)
-      .json(new ApiResponse(StatusCodes.CREATED, driver, "Driver created successfully"));
+      .json(
+        new ApiResponse(
+          StatusCodes.CREATED,
+          driver,
+          "Driver created successfully",
+        ),
+      );
   },
 );
 
@@ -29,7 +38,9 @@ export const getDriverByIdHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, driver, "Driver fetched successfully"));
+      .json(
+        new ApiResponse(StatusCodes.OK, driver, "Driver fetched successfully"),
+      );
   },
 );
 
@@ -39,7 +50,13 @@ export const getAllDriversHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, drivers, "Drivers fetched successfully"));
+      .json(
+        new ApiResponse(
+          StatusCodes.OK,
+          drivers,
+          "Drivers fetched successfully",
+        ),
+      );
   },
 );
 
@@ -50,7 +67,9 @@ export const updateDriverHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, driver, "Driver updated successfully"));
+      .json(
+        new ApiResponse(StatusCodes.OK, driver, "Driver updated successfully"),
+      );
   },
 );
 
@@ -60,6 +79,8 @@ export const deleteDriverHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, null, "Driver deleted successfully"));
+      .json(
+        new ApiResponse(StatusCodes.OK, null, "Driver deleted successfully"),
+      );
   },
 );

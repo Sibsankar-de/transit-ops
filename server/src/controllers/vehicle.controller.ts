@@ -3,8 +3,15 @@ import { StatusCodes } from "http-status-codes";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { validateBody } from "../utils/validate.utils";
-import { createVehicleSchema, updateVehicleSchema } from "../schemas/vehicle.schema";
-import { createVehicle, updateVehicle, deleteVehicle } from "../service/vehicle.service";
+import {
+  createVehicleSchema,
+  updateVehicleSchema,
+} from "../schemas/vehicle.schema";
+import {
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+} from "../service/vehicle.service";
 
 export const createVehicleHandler = asyncHandler(
   async (req: Request, res: Response) => {
@@ -13,7 +20,13 @@ export const createVehicleHandler = asyncHandler(
 
     return res
       .status(StatusCodes.CREATED)
-      .json(new ApiResponse(StatusCodes.CREATED, vehicle, "Vehicle created successfully"));
+      .json(
+        new ApiResponse(
+          StatusCodes.CREATED,
+          vehicle,
+          "Vehicle created successfully",
+        ),
+      );
   },
 );
 
@@ -24,7 +37,13 @@ export const updateVehicleHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, vehicle, "Vehicle updated successfully"));
+      .json(
+        new ApiResponse(
+          StatusCodes.OK,
+          vehicle,
+          "Vehicle updated successfully",
+        ),
+      );
   },
 );
 
@@ -34,6 +53,8 @@ export const deleteVehicleHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, null, "Vehicle deleted successfully"));
+      .json(
+        new ApiResponse(StatusCodes.OK, null, "Vehicle deleted successfully"),
+      );
   },
 );

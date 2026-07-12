@@ -11,6 +11,8 @@ import vehicleRouter from "./routes/vehicle.route";
 import driverRouter from "./routes/driver.route";
 import tripRouter from "./routes/trip.route";
 import maintenanceRouter from "./routes/maintenance.route";
+import fuelLogRouter from "./routes/fuelLog.route";
+import expenseRouter from "./routes/expense.route";
 
 const app = express();
 
@@ -38,6 +40,8 @@ app.use("/api/v1/vehicles", vehicleRouter);
 app.use("/api/v1/drivers", driverRouter);
 app.use("/api/v1/trips", tripRouter);
 app.use("/api/v1/maintenance", maintenanceRouter);
+app.use("/api/v1/fuel-logs", fuelLogRouter);
+app.use("/api/v1/expenses", expenseRouter);
 
 // error middleware
 app.use(errorMiddleware);
