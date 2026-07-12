@@ -21,6 +21,9 @@ export const tripsApiSlice = apiSlice.injectEndpoints({
           ...(params.driverId && { driverId: params.driverId }),
           ...(params.startDate && { startDate: params.startDate }),
           ...(params.endDate && { endDate: params.endDate }),
+          ...(params.search && { search: params.search }),
+          ...(params.sortBy && { sortBy: params.sortBy }),
+          ...(params.sortOrder && { sortOrder: params.sortOrder }),
         },
       }),
       providesTags: (result) =>

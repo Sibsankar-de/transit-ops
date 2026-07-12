@@ -2,8 +2,10 @@ import { apiSlice } from "../apiSlice";
 import {
   Vehicle,
   ApiResponse,
+  PaginatedResponse,
   CreateVehicleInput,
   UpdateVehicleInput,
+  ListVehiclesParams,
 } from "@/types/api";
 
 export const vehiclesApiSlice = apiSlice.injectEndpoints({
@@ -34,14 +36,24 @@ export const vehiclesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Vehicle", id: "LIST" }],
     }),
-    // NOTE: GET /vehicles is not yet implemented in the backend
-    // It is mapped here for forward compatibility once the route is added
-    getVehicles: builder.query<ApiResponse<Vehicle[]>, void>({
-      query: () => "/vehicles",
+    getVehicles: builder.query<ApiResponse<PaginatedResponse<Vehicle>>, ListVehiclesParams>({
+      query: (params = {}) => ({
+        url: "/vehicles",
+        params: {
+          page: params.page ?? 1,
+          limit: params.limit ?? 10,
+          ...(params.search && { search: params.search }),
+          ...(params.status && { status: params.status }),
+          ...(params.type && { type: params.type }),
+          ...(params.region && { region: params.region }),
+          ...(params.sortBy && { sortBy: params.sortBy }),
+          ...(params.sortOrder && { sortOrder: params.sortOrder }),
+        },
+      }),
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map(({ id }) => ({ type: "Vehicle" as const, id })),
+              ...result.data.docs.map(({ id }) => ({ type: "Vehicle" as const, id })),
               { type: "Vehicle" as const, id: "LIST" },
             ]
           : [{ type: "Vehicle" as const, id: "LIST" }],

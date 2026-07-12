@@ -17,6 +17,10 @@ import {
 } from "@/store/slices/tripsApiSlice";
 import { useGetDriversQuery } from "@/store/slices/driversApiSlice";
 import { useGetVehiclesQuery } from "@/store/slices/vehiclesApiSlice";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { SearchIcon } from "@/components/ui/SearchInput";
+import { useToast } from "@/components/ui/Toast";
 
 const TABS = ["All", "Draft", "Dispatched", "Completed", "Cancelled"];
 
@@ -31,6 +35,9 @@ export default function TripsPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"createdAt" | "plannedDistance">("createdAt");
+  const { error } = useToast();
 
   // RTK Query
   const statusFilter = activeTab === "All" ? undefined : activeTab.toUpperCase() as TripStatus;
@@ -38,9 +45,12 @@ export default function TripsPage() {
     page,
     limit: 20,
     ...(statusFilter && { status: statusFilter }),
+    search: search || undefined,
+    sortBy,
+    sortOrder: "desc",
   });
 
-  const { data: vehiclesResp } = useGetVehiclesQuery();
+  const { data: vehiclesResp } = useGetVehiclesQuery({ page: 1, limit: 1000 });
   const { data: driversResp } = useGetDriversQuery({ page: 1, limit: 100 });
 
   const [createTrip] = useCreateTripMutation();
@@ -52,7 +62,7 @@ export default function TripsPage() {
   const totalPages = response?.data?.totalPages ?? 1;
 
   const vehicles = useMemo(() =>
-    (vehiclesResp?.data ?? []).map((v) => ({
+    (vehiclesResp?.data?.docs ?? []).map((v: any) => ({
       id: v.id,
       registration: v.registrationNumber,
       make: v.type,   // using vehicle type as make
@@ -82,13 +92,13 @@ export default function TripsPage() {
       }).unwrap();
       setModalOpen(false);
     } catch (err: any) {
-      alert(err?.data?.message ?? "Failed to create trip.");
+      error(err?.data?.message ?? "Failed to create trip.");
     }
   };
 
   const handleDispatch = async (tripId: string) => {
     try { await dispatchTrip(tripId).unwrap(); }
-    catch (err: any) { alert(err?.data?.message ?? "Failed to dispatch trip."); }
+    catch (err: any) { error(err?.data?.message ?? "Failed to dispatch trip."); }
   };
 
   const handleComplete = async (trip: Trip) => {
@@ -98,14 +108,14 @@ export default function TripsPage() {
     try {
       await completeTrip({ id: trip.id, data: { finalOdometer, fuelConsumed } }).unwrap();
     } catch (err: any) {
-      alert(err?.data?.message ?? "Failed to complete trip.");
+      error(err?.data?.message ?? "Failed to complete trip.");
     }
   };
 
   const handleCancel = async (tripId: string) => {
     if (!confirm("Are you sure you want to cancel this trip?")) return;
     try { await cancelTrip(tripId).unwrap(); }
-    catch (err: any) { alert(err?.data?.message ?? "Failed to cancel trip."); }
+    catch (err: any) { error(err?.data?.message ?? "Failed to cancel trip."); }
   };
 
   const getProgressStep = (status: string) => {
@@ -154,6 +164,37 @@ export default function TripsPage() {
               {tab}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Search & Sorting Toolbar */}
+      <div className="flex flex-col md:flex-row md:items-center gap-4">
+        <div className="flex-1 max-w-md relative flex items-center">
+          <Input
+            placeholder="Search trips by origin, destination..."
+            value={search}
+            onChange={(e: any) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            icon={<SearchIcon />}
+            className="w-full"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <Select
+            placeholder="Sort By"
+            value={sortBy}
+            options={[
+              { key: "createdAt", value: "Date Created" },
+              { key: "plannedDistance", value: "Planned Distance" },
+            ]}
+            onChange={(val: any) => {
+              setSortBy(val);
+              setPage(1);
+            }}
+            className="w-[180px]"
+          />
         </div>
       </div>
 

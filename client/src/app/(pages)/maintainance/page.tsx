@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ColumnDef, PaginationState } from "@tanstack/react-table";
+import { ColumnDef, PaginationState, SortingState } from "@tanstack/react-table";
+import { Input } from "@/components/ui/Input";
+import { SearchIcon } from "@/components/ui/SearchInput";
 import { MaintenanceLog, MaintenanceStatus } from "@/types/api";
 import { DataTable } from "@/components/ui/DataTable";
 import { RequestMaintenanceForm, RequestFormValues } from "@/components/maintenance/RequestMaintenanceForm";
@@ -15,6 +17,7 @@ import {
   useCloseMaintenanceLogMutation,
 } from "@/store/slices/maintenanceApiSlice";
 import { useGetVehiclesQuery } from "@/store/slices/vehiclesApiSlice";
+import { useToast } from "@/components/ui/Toast";
 
 const TABS = ["History", "Upcoming"];
 
@@ -27,6 +30,9 @@ const STATUS_STYLES: Record<MaintenanceStatus, string> = {
 export default function MaintenancePage() {
   const [activeTab, setActiveTab] = useState("History");
   const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [historySorting, setHistorySorting] = useState<SortingState>([]);
+  const { error } = useToast();
 
   const [historyPagination, setHistoryPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -37,6 +43,17 @@ export default function MaintenancePage() {
     pageSize: 10,
   });
 
+  const sortByMap: Record<string, "createdAt" | "startDate" | "cost" | "description"> = {
+    id: "createdAt",
+    vehicle: "createdAt",
+    description: "description",
+    startDate: "startDate",
+    cost: "cost",
+  };
+
+  const historySortBy = historySorting.length > 0 ? (sortByMap[historySorting[0].id] || "createdAt") : "createdAt";
+  const historySortOrder = historySorting.length > 0 ? (historySorting[0].desc ? "desc" : "asc") : "desc";
+
   // RTK Query — History: CLOSED logs
   const {
     data: historyResponse,
@@ -46,6 +63,9 @@ export default function MaintenancePage() {
     page: historyPagination.pageIndex + 1,
     limit: historyPagination.pageSize,
     status: MaintenanceStatus.CLOSED,
+    search: search || undefined,
+    sortBy: historySortBy,
+    sortOrder: historySortOrder,
   });
 
   // RTK Query — Upcoming: OPEN logs
@@ -56,6 +76,9 @@ export default function MaintenancePage() {
     page: upcomingPagination.pageIndex + 1,
     limit: upcomingPagination.pageSize,
     status: MaintenanceStatus.OPEN,
+    search: search || undefined,
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
 
   // RTK Query — In-Progress for warning banner
@@ -65,7 +88,7 @@ export default function MaintenancePage() {
     status: MaintenanceStatus.IN_PROGRESS,
   });
 
-  const { data: vehiclesResponse } = useGetVehiclesQuery();
+  const { data: vehiclesResponse } = useGetVehiclesQuery({ page: 1, limit: 1000 });
 
   const [createMaintenanceLog, { isLoading: isCreating }] = useCreateMaintenanceLogMutation();
   const [closeMaintenanceLog] = useCloseMaintenanceLogMutation();
@@ -80,7 +103,7 @@ export default function MaintenancePage() {
 
   // Vehicles for request form
   const vehicles = useMemo(() =>
-    (vehiclesResponse?.data ?? []).map((v) => ({
+    (vehiclesResponse?.data?.docs ?? []).map((v: any) => ({
       id: v.id,
       registration: v.registrationNumber,
       make: v.type,   // using type as make
@@ -179,7 +202,7 @@ export default function MaintenancePage() {
             onClick={async () => {
               if (confirm("Close this maintenance log?")) {
                 try { await closeMaintenanceLog(row.original.id).unwrap(); }
-                catch (err: any) { alert(err?.data?.message ?? "Failed to close log."); }
+                catch (err: any) { error(err?.data?.message ?? "Failed to close log."); }
               }
             }}
             className="text-xs text-emerald-400 hover:underline cursor-pointer font-semibold"
@@ -202,7 +225,7 @@ export default function MaintenancePage() {
       setRequestModalOpen(false);
       setActiveTab("Upcoming");
     } catch (err: any) {
-      alert(err?.data?.message ?? "Failed to create maintenance request.");
+      error(err?.data?.message ?? "Failed to create maintenance request.");
     }
   };
 
@@ -269,6 +292,21 @@ export default function MaintenancePage() {
         </Button>
       </div>
 
+      {/* Search Input Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 max-w-md">
+        <Input
+          placeholder="Search logs by description..."
+          value={search}
+          onChange={(e: any) => {
+            setSearch(e.target.value);
+            setHistoryPagination((prev) => ({ ...prev, pageIndex: 0 }));
+            setUpcomingPagination((prev) => ({ ...prev, pageIndex: 0 }));
+          }}
+          icon={<SearchIcon />}
+          className="w-full"
+        />
+      </div>
+
       {/* Tab Panels */}
       {isLoading ? (
         <div className="flex items-center justify-center min-h-[200px]">
@@ -281,6 +319,8 @@ export default function MaintenancePage() {
           pageCount={historyPageCount}
           pagination={historyPagination}
           onPaginationChange={setHistoryPagination}
+          sorting={historySorting}
+          onSortingChange={setHistorySorting}
           emptyState={
             <div className="flex flex-col items-center justify-center p-12 text-center">
               <p className="text-muted-foreground text-sm">No maintenance history logs.</p>

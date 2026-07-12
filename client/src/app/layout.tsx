@@ -19,6 +19,8 @@ export const metadata: Metadata = {
     "TransitOps is a modern fleet and transport management platform that helps logistics companies streamline vehicle management, driver operations, trip dispatching, maintenance, fuel tracking, expenses, and analytics.",
 };
 
+import { ToastProvider } from "@/components/ui/Toast";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,7 +32,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <StoreProvider>{children}</StoreProvider>
+        <StoreProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </StoreProvider>
       </body>
     </html>
   );

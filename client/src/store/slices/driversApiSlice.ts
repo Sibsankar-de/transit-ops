@@ -13,7 +13,15 @@ export const driversApiSlice = apiSlice.injectEndpoints({
     getDrivers: builder.query<ApiResponse<PaginatedResponse<Driver>>, ListDriversParams>({
       query: (params = {}) => ({
         url: "/drivers",
-        params: { page: params.page ?? 1, limit: params.limit ?? 10 },
+        params: {
+          page: params.page ?? 1,
+          limit: params.limit ?? 10,
+          ...(params.search && { search: params.search }),
+          ...(params.status && { status: params.status }),
+          ...(params.licenseCategory && { licenseCategory: params.licenseCategory }),
+          ...(params.sortBy && { sortBy: params.sortBy }),
+          ...(params.sortOrder && { sortOrder: params.sortOrder }),
+        },
       }),
       providesTags: (result) =>
         result

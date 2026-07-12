@@ -26,7 +26,7 @@ const NAV_ITEMS = [
   { label: "Fuel & Expenses", href: "/fuel-and-expense", icon: DollarSign },
 ] as const;
 
-export function SideNav() {
+export function SideNav({ onMobileClose }: { onMobileClose?: () => void }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -74,6 +74,7 @@ export function SideNav() {
             <Link
               key={href}
               href={href}
+              onClick={onMobileClose}
               title={collapsed ? label : undefined}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm",
@@ -159,6 +160,7 @@ export function SideNav() {
                   <Link
                     key={subItem.tab}
                     href={subItem.href}
+                    onClick={onMobileClose}
                     className={cn(
                       "flex items-center gap-3 pl-11 py-2 rounded-md text-xs font-medium transition-all duration-150",
                       isSubActive

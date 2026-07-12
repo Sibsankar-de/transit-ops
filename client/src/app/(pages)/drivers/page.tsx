@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ColumnDef, PaginationState } from "@tanstack/react-table";
+import { ColumnDef, PaginationState, SortingState } from "@tanstack/react-table";
 import { DriverStatus } from "@/enums/driverStatus.enum";
 import { Driver } from "@/types/api";
 import { DataTable } from "@/components/ui/DataTable";
@@ -19,6 +19,7 @@ import {
   useCreateDriverMutation,
   useUpdateDriverMutation,
 } from "@/store/slices/driversApiSlice";
+import { useToast } from "@/components/ui/Toast";
 
 const STATUS_STYLES: Record<DriverStatus, string> = {
   [DriverStatus.AVAILABLE]: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
@@ -40,19 +41,34 @@ const DEFAULT_PAGE_SIZE = 10;
 export default function DriversPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
   });
+  const { error } = useToast();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
-  // RTK Query — server-side pagination
+  // Sorting columns mapped to server fields
+  const sortByMap: Record<string, "createdAt" | "licenseExpiryDate" | "safetyScore"> = {
+    licenseExpiryDate: "licenseExpiryDate",
+    safetyScore: "safetyScore",
+  };
+
+  const sortBy = sorting.length > 0 ? (sortByMap[sorting[0].id] || "createdAt") : "createdAt";
+  const sortOrder = sorting.length > 0 ? (sorting[0].desc ? "desc" : "asc") : "desc";
+
+  // RTK Query — server-side pagination, sorting & searching
   const { data: response, isLoading, isFetching } = useGetDriversQuery({
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
+    search: search || undefined,
+    status: statusFilter ? (statusFilter as DriverStatus) : undefined,
+    sortBy,
+    sortOrder,
   });
 
   const [createDriver] = useCreateDriverMutation();
@@ -60,19 +76,6 @@ export default function DriversPage() {
 
   const drivers = response?.data?.docs ?? [];
   const pageCount = response?.data?.totalPages ?? 0;
-
-  // Client-side search filter (applied on top of server page for instant UX)
-  const filteredDrivers = useMemo(() => {
-    if (!search && !statusFilter) return drivers;
-    return drivers.filter((d) => {
-      const matchesSearch =
-        !search ||
-        d.licenseNumber.toLowerCase().includes(search.toLowerCase()) ||
-        (d.user?.name ?? "").toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = !statusFilter || d.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [drivers, search, statusFilter]);
 
   const getExpiryStyle = (dateStr: string) => {
     const expiry = new Date(dateStr);
@@ -203,7 +206,7 @@ export default function DriversPage() {
       }).unwrap();
       setAddModalOpen(false);
     } catch (err: any) {
-      alert(err?.data?.message ?? "Failed to create driver.");
+      error(err?.data?.message ?? "Failed to create driver.");
     }
   };
 
@@ -223,7 +226,7 @@ export default function DriversPage() {
       setEditModalOpen(false);
       setSelectedDriver(null);
     } catch (err: any) {
-      alert(err?.data?.message ?? "Failed to update driver.");
+      error(err?.data?.message ?? "Failed to update driver.");
     }
   };
 
@@ -278,10 +281,12 @@ export default function DriversPage() {
       ) : (
         <DataTable
           columns={columns}
-          data={filteredDrivers}
+          data={drivers}
           pageCount={pageCount}
           pagination={pagination}
           onPaginationChange={setPagination}
+          sorting={sorting}
+          onSortingChange={setSorting}
           emptyState={
             <div className="flex flex-col items-center justify-center p-12 text-center">
               <p className="text-muted-foreground text-sm">No drivers found.</p>

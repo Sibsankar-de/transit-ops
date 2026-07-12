@@ -32,6 +32,7 @@ import {
   Lock
 } from "lucide-react";
 import { cn } from "../utils";
+import { useToast } from "../ui/Toast";
 
 // Permissions grouped by category for cleaner display in the Add Role modal
 const PERMISSION_GROUPS = [
@@ -133,6 +134,7 @@ type RoleFormData = {
 
 export const AccessPermissionSettings = () => {
   const [activeSubTab, setActiveSubTab] = useState<"users" | "roles">("users");
+  const { success, error, warning } = useToast();
 
   // RTK Query hooks
   const { data: usersResponse, isLoading: isUsersLoading } = useGetUsersQuery();
@@ -223,7 +225,7 @@ export const AccessPermissionSettings = () => {
       setSelectedUser(null);
     } catch (err: any) {
       console.error("Failed to save user:", err);
-      alert(err?.data?.message || "Failed to save user. Verify backend availability.");
+      error(err?.data?.message || "Failed to save user. Verify backend availability.");
     }
   };
 
@@ -246,14 +248,14 @@ export const AccessPermissionSettings = () => {
       setRoleModalOpen(false);
     } catch (err: any) {
       console.error("Failed to create role:", err);
-      alert(err?.data?.message || "Failed to create role. Verify backend availability.");
+      error(err?.data?.message || "Failed to create role. Verify backend availability.");
     }
   };
 
   // Delete Role
   const handleDeleteRole = async (roleId: string, roleName: string) => {
     if (isDefaultRole(roleName)) {
-      alert("System default roles cannot be deleted.");
+      warning("System default roles cannot be deleted.");
       return;
     }
 
@@ -262,7 +264,7 @@ export const AccessPermissionSettings = () => {
         await deleteRole(roleId).unwrap();
       } catch (err: any) {
         console.error("Failed to delete role:", err);
-        alert(err?.data?.message || "Failed to delete role. Verify backend availability.");
+        error(err?.data?.message || "Failed to delete role. Verify backend availability.");
       }
     }
   };

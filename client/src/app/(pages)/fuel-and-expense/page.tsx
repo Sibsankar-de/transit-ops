@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ColumnDef, PaginationState } from "@tanstack/react-table";
+import { ColumnDef, PaginationState, SortingState } from "@tanstack/react-table";
 import { FuelLog, Expense, ExpenseType } from "@/types/api";
 import { DataTable } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { SearchIcon } from "@/components/ui/SearchInput";
 import { Download } from "lucide-react";
 import { cn } from "@/components/utils";
 import {
@@ -18,6 +20,7 @@ import {
   useCreateExpenseMutation,
   useDeleteExpenseMutation,
 } from "@/store/slices/expensesApiSlice";
+import { useToast } from "@/components/ui/Toast";
 
 const TABS = ["Fuel Logs", "Expenses"];
 
@@ -26,6 +29,10 @@ const DEFAULT_PAGE_SIZE = 10;
 export default function FuelAndExpensePage() {
   const [activeTab, setActiveTab] = useState("Fuel Logs");
   const [vehicleFilter, setVehicleFilter] = useState("");
+  const [search, setSearch] = useState("");
+  const [fuelSorting, setFuelSorting] = useState<SortingState>([]);
+  const [expenseSorting, setExpenseSorting] = useState<SortingState>([]);
+  const { error } = useToast();
 
   // Separate pagination state per tab
   const [fuelPagination, setFuelPagination] = useState<PaginationState>({
@@ -37,6 +44,21 @@ export default function FuelAndExpensePage() {
     pageSize: DEFAULT_PAGE_SIZE,
   });
 
+  const fuelSortByMap: Record<string, "date" | "cost" | "liters" | "createdAt"> = {
+    date: "date",
+    cost: "cost",
+    liters: "liters",
+  };
+  const fuelSortBy = fuelSorting.length > 0 ? (fuelSortByMap[fuelSorting[0].id] || "date") : "date";
+  const fuelSortOrder = fuelSorting.length > 0 ? (fuelSorting[0].desc ? "desc" : "asc") : "desc";
+
+  const expenseSortByMap: Record<string, "date" | "amount" | "createdAt"> = {
+    date: "date",
+    amount: "amount",
+  };
+  const expenseSortBy = expenseSorting.length > 0 ? (expenseSortByMap[expenseSorting[0].id] || "date") : "date";
+  const expenseSortOrder = expenseSorting.length > 0 ? (expenseSorting[0].desc ? "desc" : "asc") : "desc";
+
   // RTK Query — Fuel Logs
   const {
     data: fuelResponse,
@@ -46,6 +68,8 @@ export default function FuelAndExpensePage() {
     page: fuelPagination.pageIndex + 1,
     limit: fuelPagination.pageSize,
     ...(vehicleFilter && { vehicleId: vehicleFilter }),
+    sortBy: fuelSortBy,
+    sortOrder: fuelSortOrder,
   });
 
   // RTK Query — Expenses
@@ -57,6 +81,9 @@ export default function FuelAndExpensePage() {
     page: expensePagination.pageIndex + 1,
     limit: expensePagination.pageSize,
     ...(vehicleFilter && { vehicleId: vehicleFilter }),
+    search: search || undefined,
+    sortBy: expenseSortBy,
+    sortOrder: expenseSortOrder,
   });
 
   const [deleteFuelLog] = useDeleteFuelLogMutation();
@@ -139,7 +166,7 @@ export default function FuelAndExpensePage() {
           onClick={async () => {
             if (confirm("Delete this fuel log?")) {
               try { await deleteFuelLog(row.original.id).unwrap(); }
-              catch (err: any) { alert(err?.data?.message ?? "Failed to delete fuel log."); }
+              catch (err: any) { error(err?.data?.message ?? "Failed to delete fuel log."); }
             }
           }}
           className="text-xs text-red-400 hover:underline cursor-pointer"
@@ -227,7 +254,7 @@ export default function FuelAndExpensePage() {
           onClick={async () => {
             if (confirm("Delete this expense?")) {
               try { await deleteExpense(row.original.id).unwrap(); }
-              catch (err: any) { alert(err?.data?.message ?? "Failed to delete expense."); }
+              catch (err: any) { error(err?.data?.message ?? "Failed to delete expense."); }
             }
           }}
           className="text-xs text-red-400 hover:underline cursor-pointer"
@@ -293,6 +320,21 @@ export default function FuelAndExpensePage() {
             </button>
           ))}
         </div>
+
+        {activeTab === "Expenses" && (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:max-w-md">
+            <Input
+              placeholder="Search expenses..."
+              value={search}
+              onChange={(e: any) => {
+                setSearch(e.target.value);
+                setExpensePagination((prev) => ({ ...prev, pageIndex: 0 }));
+              }}
+              icon={<SearchIcon />}
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
 
       {/* Main table */}
@@ -307,6 +349,8 @@ export default function FuelAndExpensePage() {
           pageCount={fuelPageCount}
           pagination={fuelPagination}
           onPaginationChange={setFuelPagination}
+          sorting={fuelSorting}
+          onSortingChange={setFuelSorting}
           emptyState={
             <div className="flex flex-col items-center justify-center p-12 text-center">
               <p className="text-muted-foreground text-sm">No fuel logs found.</p>
@@ -320,6 +364,8 @@ export default function FuelAndExpensePage() {
           pageCount={expensePageCount}
           pagination={expensePagination}
           onPaginationChange={setExpensePagination}
+          sorting={expenseSorting}
+          onSortingChange={setExpenseSorting}
           emptyState={
             <div className="flex flex-col items-center justify-center p-12 text-center">
               <p className="text-muted-foreground text-sm">No expenses found.</p>
