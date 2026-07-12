@@ -1,6 +1,10 @@
-import { SafeUser, UserModel } from "../types/user.types";
+import { SafeUser } from "../types/user.types";
+import { toSafeRole } from "./role.dto";
 
-export function toSafeUser(user: UserModel): SafeUser {
-  const { passwordHash: _ph, refreshToken: _rt, ...safe } = user;
-  return safe;
+export function toSafeUser(user: any): SafeUser {
+  const { passwordHash: _ph, refreshToken: _rt, role, ...safe } = user;
+  return {
+    ...safe,
+    role: toSafeRole(role),
+  };
 }

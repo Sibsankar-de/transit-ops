@@ -29,7 +29,9 @@ export const createUserHandler = asyncHandler(
 
     return res
       .status(StatusCodes.CREATED)
-      .json(new ApiResponse(StatusCodes.CREATED, user, "User created successfully"));
+      .json(
+        new ApiResponse(StatusCodes.CREATED, user, "User created successfully"),
+      );
   },
 );
 
@@ -76,6 +78,8 @@ export const updatePasswordHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, null, "Password updated successfully"));
+      .json(
+        new ApiResponse(StatusCodes.OK, null, "Password updated successfully"),
+      );
   },
 );

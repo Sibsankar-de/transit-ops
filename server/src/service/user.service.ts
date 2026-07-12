@@ -2,7 +2,10 @@ import bcrypt from "bcrypt";
 import { StatusCodes } from "http-status-codes";
 import { prisma } from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
-import { generateAccessToken, generateRefreshToken } from "../utils/token.utils";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../utils/token.utils";
 import { TokenPayload, SafeUser } from "../types/user.types";
 import {
   CreateUserInput,
@@ -15,10 +18,15 @@ import { toSafeUser } from "../dto/user.dto";
 const SALT_ROUNDS = 12;
 
 export async function createUser(data: CreateUserInput): Promise<SafeUser> {
-  const existing = await prisma.user.findUnique({ where: { email: data.email } });
+  const existing = await prisma.user.findUnique({
+    where: { email: data.email },
+  });
 
   if (existing) {
-    throw new ApiError(StatusCodes.CONFLICT, "A user with this email already exists");
+    throw new ApiError(
+      StatusCodes.CONFLICT,
+      "A user with this email already exists",
+    );
   }
 
   const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS);
@@ -78,7 +86,10 @@ export async function logoutUser(userId: string): Promise<void> {
   });
 }
 
-export async function updateUser(userId: string, data: UpdateUserInput): Promise<SafeUser> {
+export async function updateUser(
+  userId: string,
+  data: UpdateUserInput,
+): Promise<SafeUser> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
 
   if (!user) {
@@ -93,17 +104,26 @@ export async function updateUser(userId: string, data: UpdateUserInput): Promise
   return toSafeUser(updated);
 }
 
-export async function updatePassword(userId: string, data: UpdatePasswordInput): Promise<void> {
+export async function updatePassword(
+  userId: string,
+  data: UpdatePasswordInput,
+): Promise<void> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
 
   if (!user) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
 
-  const passwordMatch = await bcrypt.compare(data.currentPassword, user.passwordHash);
+  const passwordMatch = await bcrypt.compare(
+    data.currentPassword,
+    user.passwordHash,
+  );
 
   if (!passwordMatch) {
-    throw new ApiError(StatusCodes.UNAUTHORIZED, "Current password is incorrect");
+    throw new ApiError(
+      StatusCodes.UNAUTHORIZED,
+      "Current password is incorrect",
+    );
   }
 
   const passwordHash = await bcrypt.hash(data.newPassword, SALT_ROUNDS);
