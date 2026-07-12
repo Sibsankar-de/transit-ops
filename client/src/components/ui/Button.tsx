@@ -1,10 +1,11 @@
 "use client";
 
-import clsx, { ClassValue } from "clsx";
+import { cn } from "../utils";
 import { Loader } from "./Loader";
 import { Tooltip } from "react-tooltip";
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
+import { ClassValue } from "clsx";
 
 export interface ButtonType extends React.ComponentProps<"button"> {
   children?: React.ReactNode;
@@ -63,7 +64,7 @@ export const Button = ({
   return (
     <button
       type={type}
-      className={clsx(
+      className={cn(
         "flex items-center gap-2 px-3 py-2 border border-transparent rounded-lg cursor-pointer select-none relative",
         "disabled:brightness-75 disabled:cursor-not-allowed",
         "focus-visible:ring-ring focus-visible:ring-1",
@@ -85,7 +86,7 @@ export const Button = ({
       {loading && (
         <div
           aria-disabled={true}
-          className={clsx(
+          className={cn(
             "absolute inset-0 flex h-full w-full items-center justify-center gap-2",
             "bg-muted",
             "border-none! rounded-lg! transition-none! pointer-events-none!",

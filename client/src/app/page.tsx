@@ -1,9 +1,6 @@
-import Image from "next/image";
-
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans">
-      Welcome to TransitOps
-    </div>
-  );
-}
+import { redirect } from "next/navigation";
+import React from "react";
+const HomePage = () => {
+  return <div>welcome to home page !!</div>;
+};
+export default HomePage;
