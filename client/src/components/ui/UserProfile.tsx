@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, ChevronDown, LogOut, Settings, User } from "lucide-react";
+import Link from "next/link";
 import { Dropdown } from "./Dropdown";
 import { cn } from "../utils";
 
@@ -15,6 +16,29 @@ export function UserProfile({
   role = "Fleet Manager",
 }: UserProfileProps) {
   const [open, setOpen] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Read avatar from localStorage on mount
+    const saved = localStorage.getItem("user_avatar");
+    if (saved) setAvatar(saved);
+
+    // Listener to update avatar in header when settings change it
+    const handleStorageChange = () => {
+      const updated = localStorage.getItem("user_avatar");
+      setAvatar(updated);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    // Custom event listener for same-page updates
+    window.addEventListener("avatar_updated", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("avatar_updated", handleStorageChange);
+    };
+  }, []);
+
   const initials = name
     .split(" ")
     .map((n) => n[0])
@@ -37,9 +61,17 @@ export function UserProfile({
           onClick={() => setOpen((o) => !o)}
           className="flex items-center gap-2.5 hover:bg-secondary rounded-lg px-2 py-1.5 transition-colors"
         >
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm shrink-0">
-            {initials}
-          </div>
+          {avatar ? (
+            <img
+              src={avatar}
+              alt={name}
+              className="w-8 h-8 rounded-full object-cover shrink-0 border border-border"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm shrink-0">
+              {initials}
+            </div>
+          )}
           <div className="text-left hidden sm:block">
             <p className="text-sm font-medium text-foreground leading-none">
               {name}
@@ -60,8 +92,12 @@ export function UserProfile({
           onClose={() => setOpen(false)}
           className="right-0 top-[calc(100%+6px)] w-48"
         >
-          <DropdownItem icon={<User size={14} />} label="Profile" />
-          <DropdownItem icon={<Settings size={14} />} label="Settings" />
+          <Link href="/settings" onClick={() => setOpen(false)}>
+            <DropdownItem icon={<User size={14} />} label="Profile" />
+          </Link>
+          <Link href="/settings" onClick={() => setOpen(false)}>
+            <DropdownItem icon={<Settings size={14} />} label="Settings" />
+          </Link>
           <div className="my-1 border-t border-border" />
           <DropdownItem
             icon={<LogOut size={14} />}
@@ -84,9 +120,9 @@ function DropdownItem({
   danger?: boolean;
 }) {
   return (
-    <button
+    <div
       className={cn(
-        "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+        "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors cursor-pointer",
         danger
           ? "text-red-400 hover:bg-red-500/10"
           : "text-foreground hover:bg-secondary"
@@ -94,6 +130,6 @@ function DropdownItem({
     >
       {icon}
       {label}
-    </button>
+    </div>
   );
 }
