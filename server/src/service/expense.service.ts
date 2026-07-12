@@ -113,8 +113,18 @@ export async function listExpenses(
     if (query.startDate) where.date.gte = query.startDate;
     if (query.endDate) where.date.lte = query.endDate;
   }
+  if (query.search) {
+    where.description = { contains: query.search, mode: "insensitive" };
+  }
+  if (query.amountMin !== undefined || query.amountMax !== undefined) {
+    where.amount = {
+      ...(query.amountMin !== undefined ? { gte: query.amountMin } : {}),
+      ...(query.amountMax !== undefined ? { lte: query.amountMax } : {}),
+    };
+  }
 
   const skip = (query.page - 1) * query.limit;
+  const orderBy = { [query.sortBy]: query.sortOrder };
 
   const [total, expenses] = await prisma.$transaction([
     prisma.expense.count({ where }),
@@ -122,7 +132,7 @@ export async function listExpenses(
       where,
       skip,
       take: query.limit,
-      orderBy: { date: "desc" },
+      orderBy,
       include: { vehicle: true },
     }),
   ]);

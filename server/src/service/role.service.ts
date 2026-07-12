@@ -5,6 +5,7 @@ import { toSafeRole } from "../dto/role.dto";
 import { RoleModel } from "../types/role.types";
 import { CreateRoleInput, UpdateRoleInput, ListRolesQuery } from "../schemas/role.schema";
 import { PaginatedResponse } from "../types/pagination.types";
+import { Prisma } from "@prisma/client";
 
 export async function createRole(data: CreateRoleInput): Promise<RoleModel> {
   const existing = await prisma.role.findUnique({ where: { name: data.name } });
@@ -23,13 +24,21 @@ export async function createRole(data: CreateRoleInput): Promise<RoleModel> {
 export async function getRoles(
   query: ListRolesQuery,
 ): Promise<PaginatedResponse<RoleModel>> {
+  const where: Prisma.RoleWhereInput = {};
+  if (query.search) {
+    where.name = { contains: query.search, mode: "insensitive" };
+  }
+
   const skip = (query.page - 1) * query.limit;
+  const orderBy = { [query.sortBy]: query.sortOrder };
 
   const [total, roles] = await prisma.$transaction([
-    prisma.role.count(),
+    prisma.role.count({ where }),
     prisma.role.findMany({
+      where,
       skip,
       take: query.limit,
+      orderBy,
     }),
   ]);
 

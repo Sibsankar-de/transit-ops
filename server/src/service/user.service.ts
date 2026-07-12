@@ -13,12 +13,15 @@ import {
   LoginInput,
   UpdateUserInput,
   UpdatePasswordInput,
+  ListUsersQuery,
 } from "../schemas/user.schema";
 import { toSafeUser } from "../dto/user.dto";
 import { sendUserInviteEmail } from "./email.service";
 import { RoleName } from "../enums/role.enum";
 import { Permission } from "../enums/permission.enum";
 import { env } from "../configs/env";
+import { PaginatedResponse } from "../types/pagination.types";
+import { Prisma } from "@prisma/client";
 
 const SALT_ROUNDS = 12;
 
@@ -200,3 +203,39 @@ export async function seedDefaultAdmin(): Promise<void> {
   }
 }
 
+export async function getUsers(
+  query: ListUsersQuery,
+): Promise<PaginatedResponse<SafeUser>> {
+  const where: Prisma.UserWhereInput = {};
+
+  if (query.status) where.status = query.status;
+  if (query.roleId) where.roleId = query.roleId;
+  if (query.search) {
+    where.OR = [
+      { name: { contains: query.search, mode: "insensitive" } },
+      { email: { contains: query.search, mode: "insensitive" } },
+    ];
+  }
+
+  const skip = (query.page - 1) * query.limit;
+  const orderBy = { [query.sortBy]: query.sortOrder };
+
+  const [total, users] = await prisma.$transaction([
+    prisma.user.count({ where }),
+    prisma.user.findMany({
+      where,
+      skip,
+      take: query.limit,
+      orderBy,
+      include: { role: true },
+    }),
+  ]);
+
+  return {
+    docs: users.map(toSafeUser),
+    limit: query.limit,
+    page: query.page,
+    totalDocs: total,
+    totalPages: Math.ceil(total / query.limit),
+  };
+}

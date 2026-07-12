@@ -183,15 +183,25 @@ export async function listMaintenanceLogs(
       ...(dateTo ? { lte: dateTo } : {}),
     };
   }
+  if (filters.search) {
+    where.description = { contains: filters.search, mode: "insensitive" };
+  }
+  if (filters.costMin !== undefined || filters.costMax !== undefined) {
+    where.cost = {
+      ...(filters.costMin !== undefined ? { gte: filters.costMin } : {}),
+      ...(filters.costMax !== undefined ? { lte: filters.costMax } : {}),
+    };
+  }
 
   const skip = (page - 1) * limit;
+  const orderBy = { [filters.sortBy]: filters.sortOrder };
 
   const [logs, total] = await Promise.all([
     prisma.maintenanceLog.findMany({
       where,
       skip,
       take: limit,
-      orderBy: { createdAt: "desc" },
+      orderBy,
     }),
     prisma.maintenanceLog.count({ where }),
   ]);

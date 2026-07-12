@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { permissionValues } from "../enums/permission.enum";
-import { paginationQuerySchema } from "./pagination.schema";
+import { paginationQuerySchema, sortOrderSchema } from "./pagination.schema";
 
 export const createRoleSchema = z.object({
   name: z.string().min(2, "Role name must be at least 2 characters"),
@@ -17,5 +17,12 @@ export const updateRoleSchema = z.object({
 export type CreateRoleInput = z.infer<typeof createRoleSchema>;
 export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;
 
-export const listRolesQuerySchema = paginationQuerySchema;
+const roleSortFields = ["name", "createdAt"] as const;
+
+export const listRolesQuerySchema = paginationQuerySchema.extend({
+  search: z.string().optional(),
+  sortBy: z.enum(roleSortFields).default("createdAt"),
+  sortOrder: sortOrderSchema,
+});
+
 export type ListRolesQuery = z.infer<typeof listRolesQuerySchema>;

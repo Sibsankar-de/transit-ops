@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ExpenseType } from "@prisma/client";
-import { paginationQuerySchema } from "./pagination.schema";
+import { paginationQuerySchema, sortOrderSchema } from "./pagination.schema";
 
 const expenseTypeValues = Object.values(ExpenseType) as [string, ...string[]];
 
@@ -28,12 +28,21 @@ export const updateExpenseSchema = z.object({
   description: z.string().optional().nullable(),
 });
 
-export const listExpensesQuerySchema = z.object({
-  vehicleId: z.uuid("Invalid vehicle ID").optional(),
-  type: z.enum(expenseTypeValues).optional(),
-  startDate: z.coerce.date().optional(),
-  endDate: z.coerce.date().optional(),
-}).merge(paginationQuerySchema);
+const expenseSortFields = ["date", "amount", "createdAt"] as const;
+
+export const listExpensesQuerySchema = z
+  .object({
+    vehicleId: z.uuid("Invalid vehicle ID").optional(),
+    type: z.enum(expenseTypeValues).optional(),
+    startDate: z.coerce.date().optional(),
+    endDate: z.coerce.date().optional(),
+    search: z.string().optional(),
+    amountMin: z.coerce.number().nonnegative().optional(),
+    amountMax: z.coerce.number().nonnegative().optional(),
+    sortBy: z.enum(expenseSortFields).default("date"),
+    sortOrder: sortOrderSchema,
+  })
+  .merge(paginationQuerySchema);
 
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>;
 export type UpdateExpenseInput = z.infer<typeof updateExpenseSchema>;

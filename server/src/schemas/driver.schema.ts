@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DriverStatus } from "../enums/driverStatus.enum";
-import { paginationQuerySchema } from "./pagination.schema";
+import { paginationQuerySchema, sortOrderSchema } from "./pagination.schema";
 
 export const createDriverSchema = z.object({
   userId: z.uuid("Invalid userId"),
@@ -20,11 +20,28 @@ export const updateDriverSchema = z.object({
     .min(0, "Safety score cannot be negative")
     .max(100, "Safety score cannot exceed 100")
     .optional(),
-  status: z.enum(DriverStatus).optional(),
+  status: z
+    .enum(Object.values(DriverStatus) as [string, ...string[]])
+    .optional(),
 });
 
 export type CreateDriverInput = z.infer<typeof createDriverSchema>;
 export type UpdateDriverInput = z.infer<typeof updateDriverSchema>;
 
-export const listDriversQuerySchema = paginationQuerySchema;
+const driverSortFields = [
+  "createdAt",
+  "licenseExpiryDate",
+  "safetyScore",
+] as const;
+
+export const listDriversQuerySchema = paginationQuerySchema.extend({
+  search: z.string().optional(),
+  status: z
+    .enum(Object.values(DriverStatus) as [string, ...string[]])
+    .optional(),
+  licenseCategory: z.string().optional(),
+  sortBy: z.enum(driverSortFields).default("createdAt"),
+  sortOrder: sortOrderSchema,
+});
+
 export type ListDriversQuery = z.infer<typeof listDriversQuerySchema>;
