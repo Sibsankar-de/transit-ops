@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   DollarSign,
@@ -23,12 +24,16 @@ const NAV_ITEMS = [
   { label: "Trips", href: "/trips", icon: Route },
   { label: "Maintenance", href: "/maintainance", icon: Wrench },
   { label: "Fuel & Expenses", href: "/fuel-and-expense", icon: DollarSign },
-  { label: "Settings", href: "/settings", icon: Settings },
 ] as const;
 
 export function SideNav() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
+
+  const [settingsExpanded, setSettingsExpanded] = useState(() => pathname.startsWith("/settings"));
 
   return (
     <aside
@@ -93,6 +98,81 @@ export function SideNav() {
             </Link>
           );
         })}
+
+        {/* Settings collapsible dropdown */}
+        <div>
+          <button
+            onClick={() => {
+              if (collapsed) {
+                router.push("/settings?tab=general");
+              } else {
+                setSettingsExpanded((prev) => !prev);
+              }
+            }}
+            title={collapsed ? "Settings" : undefined}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm w-full text-left cursor-pointer",
+              "transition-all duration-150",
+              pathname === "/settings"
+                ? "bg-primary/15 text-primary font-medium"
+                : "text-secondary-foreground hover:bg-secondary hover:text-foreground",
+            )}
+          >
+            <span className="flex items-center justify-center p-1!">
+              <Settings size={16} className="shrink-0" />
+            </span>
+
+            <span
+              className={cn(
+                "whitespace-nowrap transition-opacity duration-200 flex-1",
+                collapsed ? "hidden" : "block",
+              )}
+            >
+              Settings
+            </span>
+
+            {!collapsed && (
+              <ChevronDown
+                size={16}
+                className={cn(
+                  "transition-transform duration-200 shrink-0",
+                  settingsExpanded && "rotate-180",
+                )}
+              />
+            )}
+          </button>
+
+          {settingsExpanded && !collapsed && (
+            <div className="flex flex-col gap-0.5 mt-0.5">
+              {[
+                { label: "General Settings", tab: "general", href: "/settings?tab=general" },
+                { label: "Profile", tab: "profile", href: "/settings?tab=profile" },
+                { label: "Role Access Control", tab: "access", href: "/settings?tab=access" },
+              ].map((subItem) => {
+                const isSubActive =
+                  pathname === "/settings" &&
+                  (subItem.tab === "general"
+                    ? !tab || tab === "general"
+                    : tab === subItem.tab);
+
+                return (
+                  <Link
+                    key={subItem.tab}
+                    href={subItem.href}
+                    className={cn(
+                      "flex items-center gap-3 pl-11 py-2 rounded-md text-xs font-medium transition-all duration-150",
+                      isSubActive
+                        ? "bg-primary/15 text-primary"
+                        : "text-secondary-foreground/80 hover:bg-secondary hover:text-foreground",
+                    )}
+                  >
+                    {subItem.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </nav>
 
       <button
@@ -118,3 +198,4 @@ export function SideNav() {
     </aside>
   );
 }
+

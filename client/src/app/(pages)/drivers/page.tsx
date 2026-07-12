@@ -394,8 +394,8 @@ export default function DriversPage() {
           <Input
             placeholder="Search by name or license..."
             value={search}
-            onChange={(val) => {
-              setSearch(val);
+            onChange={(e: any) => {
+              setSearch(e.target.value);
               setPagination((prev) => ({ ...prev, pageIndex: 0 }));
             }}
             icon={<SearchIcon />}

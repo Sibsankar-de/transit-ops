@@ -171,7 +171,7 @@ export default function DashboardPage() {
             <Input
               type="date"
               value={startDate}
-              onChange={(val) => handleDateChange(val, "start")}
+              onChange={(e: any) => handleDateChange(e.target.value, "start")}
             />
           </div>
           <span className="text-muted-foreground text-sm font-medium">to</span>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
             <Input
               type="date"
               value={endDate}
-              onChange={(val) => handleDateChange(val, "end")}
+              onChange={(e: any) => handleDateChange(e.target.value, "end")}
             />
           </div>
         </div>
