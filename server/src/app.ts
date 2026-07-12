@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./configs/env";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import userRouter from "./routes/user.route";
+import vehicleRouter from "./routes/vehicle.route";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(morgan("dev"));
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/vehicles", vehicleRouter);
 
 // error middleware
 app.use(errorMiddleware);
