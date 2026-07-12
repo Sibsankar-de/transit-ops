@@ -1,11 +1,7 @@
-import React from 'react'
+import React from "react";
 
-export const FuelAndExpensePage = () => {
-  return (
-    <div>
-      Welcome to fuel and expense Page!!
-    </div>
-  )
-}
+const FuelAndExpensePage = () => {
+  return <div>Welcome to fuel and expense Page!!</div>;
+};
 
-
+export default FuelAndExpensePage;

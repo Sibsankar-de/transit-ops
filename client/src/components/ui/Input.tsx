@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import clsx from "clsx";
+import { cn } from "../utils";
 import { Eye, EyeOff, OctagonAlert } from "lucide-react";
 
-export interface InputType
-  extends Omit<React.ComponentProps<"input">, "onChange"> {
+export interface InputType extends Omit<
+  React.ComponentProps<"input">,
+  "onChange"
+> {
   onChange?: (e: string) => void;
   isInvalid?: boolean;
   icon?: React.ReactElement;
@@ -30,7 +32,7 @@ export const Input = ({
     <div className="relative flex w-full items-center group">
       {icon && (
         <div
-          className={clsx(
+          className={cn(
             "absolute left-3 flex h-fit w-fit items-center justify-center",
             "text-muted-foreground group-focus-within:text-primary",
           )}
@@ -47,7 +49,7 @@ export const Input = ({
         disabled={disabled}
         onChange={(e) => onChange?.(e.target.value)}
         onWheel={(e) => e.currentTarget.blur()}
-        className={clsx(
+        className={cn(
           "w-full rounded-lg border border-border bg-card px-3 py-2 text-foreground placeholder:text-muted-foreground",
           "focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200",
           icon && "pl-10",

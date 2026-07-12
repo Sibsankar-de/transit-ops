@@ -1,11 +1,6 @@
-import React from 'react'
+import React from "react";
 
-export const DriverPage = () => {
-  return (
-    <div>
-      Welcome to Drivers Page!!
-    </div>
-  )
-}
-
-
+const DriverPage = () => {
+  return <div>Welcome to Drivers Page!!</div>;
+};
+export default DriverPage;

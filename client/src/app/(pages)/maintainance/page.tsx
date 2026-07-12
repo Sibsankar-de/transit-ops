@@ -1,11 +1,7 @@
-import React from 'react'
+import React from "react";
 
-export const MaintainancePage = () => {
-  return (
-    <div>
-      Welcome to maintainance Page!!
-    </div>
-  )
-}
+const MaintainancePage = () => {
+  return <div>Welcome to maintainance Page!!</div>;
+};
 
-
+export default MaintainancePage;

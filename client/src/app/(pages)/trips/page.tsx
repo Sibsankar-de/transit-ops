@@ -1,11 +1,7 @@
-import React from 'react'
+import React from "react";
 
-export const TripsPage = () => {
-  return (
-    <div>
-      Welcome to Trips Page!!
-    </div>
-  )
-}
+const TripsPage = () => {
+  return <div>Welcome to Trips Page!!</div>;
+};
 
-
+export default TripsPage;

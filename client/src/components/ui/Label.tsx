@@ -1,5 +1,5 @@
 import React from "react";
-import clsx from "clsx";
+import { cn } from "../utils";
 
 export const Label = ({
   children,
@@ -14,7 +14,7 @@ export const Label = ({
 } & React.ComponentProps<"label">) => {
   return (
     <label
-      className={clsx(
+      className={cn(
         "mb-1.5 block text-sm font-medium text-foreground",
         className,
       )}

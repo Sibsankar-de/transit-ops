@@ -1,11 +1,7 @@
-import React from 'react'
+import React from "react";
 
-export const AnalyticsPage = () => {
-  return (
-    <div>
-      Welcome to analytics Page!!
-    </div>
-  )
-}
+const AnalyticsPage = () => {
+  return <div>Welcome to analytics Page!!</div>;
+};
 
-
+export default AnalyticsPage;

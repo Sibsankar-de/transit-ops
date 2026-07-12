@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "../utils";
 import { useEffect, useState } from "react";
 
 export const Loader = ({
@@ -12,7 +12,7 @@ export const Loader = ({
 }) => {
   return (
     <div
-      className={clsx(
+      className={cn(
         "border-white/30 border-t-white rounded-full animate-spin",
         className,
       )}
@@ -47,19 +47,18 @@ export function SliderLoader({
 
   return (
     <div
-      className={clsx(
+      className={cn(
         "relative h-1 w-full overflow-hidden rounded-full bg-secondary",
         className,
       )}
     >
       <div
-        className={clsx(
+        className={cn(
           "absolute h-full rounded-full bg-linear-to-r from-primary/30 via-primary/50 to-primary",
           visible ? "animate-slide" : "opacity-0",
         )}
         style={{
-          animation:
-            "slideLoader 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+          animation: "slideLoader 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite",
         }}
       />
 

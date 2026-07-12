@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import clsx from "clsx";
+import { cn } from "../utils";
 import { Button } from "./Button";
 import { X } from "lucide-react";
 
@@ -76,7 +76,7 @@ export const Modal = ({
   return createPortal(
     <ModalContext.Provider value={{ open, onClose }}>
       <div
-        className={clsx(
+        className={cn(
           "fixed inset-0 z-60 flex items-start justify-center overflow-y-auto pt-8 pb-2",
           "bg-black/60 backdrop-blur-sm fade-in",
           closing && "fade-out",
@@ -84,7 +84,7 @@ export const Modal = ({
         onClick={() => onClose?.()}
       >
         <div
-          className={clsx(
+          className={cn(
             "rounded-xl border border-border bg-card text-card-foreground shadow-2xl dropdown-open-anim",
             closing && "dropdown-close-anim",
           )}
@@ -92,7 +92,7 @@ export const Modal = ({
         >
           {header}
 
-          <div className={clsx("min-h-[5em] min-w-[15em] p-3", className)}>
+          <div className={cn("min-h-[5em] min-w-[15em] p-3", className)}>
             {children}
           </div>
         </div>
