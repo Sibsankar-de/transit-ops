@@ -10,7 +10,7 @@ export function toSafeMaintenanceLog(raw: any): MaintenanceLogModel {
     id: raw.id,
     vehicleId: raw.vehicleId,
     description: raw.description,
-    cost: Number(raw.cost), 
+    cost: Number(raw.cost),
     status: raw.status,
     startDate: raw.startDate,
     endDate: raw.endDate ?? null,
@@ -19,7 +19,9 @@ export function toSafeMaintenanceLog(raw: any): MaintenanceLogModel {
   };
 }
 
-export function toSafeMaintenanceLogWithVehicle(raw: any): MaintenanceLogWithVehicle {
+export function toSafeMaintenanceLogWithVehicle(
+  raw: any,
+): MaintenanceLogWithVehicle {
   return {
     ...toSafeMaintenanceLog(raw),
     vehicle: toSafeVehicle(raw.vehicle as VehicleModel),

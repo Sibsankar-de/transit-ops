@@ -38,8 +38,18 @@ export const vehicleMaintenanceCostSchema = z.object({
   status: z.nativeEnum(MaintenanceStatus).optional(),
 });
 
-export type CreateMaintenanceLogInput = z.infer<typeof createMaintenanceLogSchema>;
-export type CloseMaintenanceLogInput = z.infer<typeof closeMaintenanceLogSchema>;
-export type UpdateMaintenanceLogInput = z.infer<typeof updateMaintenanceLogSchema>;
-export type ListMaintenanceLogsInput = z.infer<typeof listMaintenanceLogsSchema>;
-export type VehicleMaintenanceCostInput = z.infer<typeof vehicleMaintenanceCostSchema>;
+export type CreateMaintenanceLogInput = z.infer<
+  typeof createMaintenanceLogSchema
+>;
+export type CloseMaintenanceLogInput = z.infer<
+  typeof closeMaintenanceLogSchema
+>;
+export type UpdateMaintenanceLogInput = z.infer<
+  typeof updateMaintenanceLogSchema
+>;
+export type ListMaintenanceLogsInput = z.infer<
+  typeof listMaintenanceLogsSchema
+>;
+export type VehicleMaintenanceCostInput = z.infer<
+  typeof vehicleMaintenanceCostSchema
+>;

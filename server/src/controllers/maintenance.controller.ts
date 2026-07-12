@@ -26,7 +26,13 @@ export const createMaintenanceLogHandler = asyncHandler(
 
     return res
       .status(StatusCodes.CREATED)
-      .json(new ApiResponse(StatusCodes.CREATED, log, "Maintenance log created successfully"));
+      .json(
+        new ApiResponse(
+          StatusCodes.CREATED,
+          log,
+          "Maintenance log created successfully",
+        ),
+      );
   },
 );
 
@@ -37,7 +43,13 @@ export const closeMaintenanceLogHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, log, "Maintenance log closed successfully"));
+      .json(
+        new ApiResponse(
+          StatusCodes.OK,
+          log,
+          "Maintenance log closed successfully",
+        ),
+      );
   },
 );
 
@@ -48,7 +60,13 @@ export const updateMaintenanceLogHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, log, "Maintenance log updated successfully"));
+      .json(
+        new ApiResponse(
+          StatusCodes.OK,
+          log,
+          "Maintenance log updated successfully",
+        ),
+      );
   },
 );
 
@@ -58,7 +76,13 @@ export const getMaintenanceLogHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, log, "Maintenance log fetched successfully"));
+      .json(
+        new ApiResponse(
+          StatusCodes.OK,
+          log,
+          "Maintenance log fetched successfully",
+        ),
+      );
   },
 );
 
@@ -69,19 +93,32 @@ export const listMaintenanceLogsHandler = asyncHandler(
 
     return res
       .status(StatusCodes.OK)
-      .json(new ApiResponse(StatusCodes.OK, result, "Maintenance logs fetched successfully"));
+      .json(
+        new ApiResponse(
+          StatusCodes.OK,
+          result,
+          "Maintenance logs fetched successfully",
+        ),
+      );
   },
 );
 
 export const getVehicleMaintenanceCostHandler = asyncHandler(
   async (req: Request, res: Response) => {
     const filters = validateBody(vehicleMaintenanceCostSchema, req.query);
-    const result = await getVehicleMaintenanceCost(req.params.vehicleId as string, filters);
+    const result = await getVehicleMaintenanceCost(
+      req.params.vehicleId as string,
+      filters,
+    );
 
     return res
       .status(StatusCodes.OK)
       .json(
-        new ApiResponse(StatusCodes.OK, result, "Vehicle maintenance cost fetched successfully"),
+        new ApiResponse(
+          StatusCodes.OK,
+          result,
+          "Vehicle maintenance cost fetched successfully",
+        ),
       );
   },
 );

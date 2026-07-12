@@ -10,7 +10,6 @@ export const errorMiddleware = (
 ) => {
   let error = err;
 
-  // log the error for debugging
   console.error("Error:", error);
 
   if (!(error instanceof ApiError)) {
