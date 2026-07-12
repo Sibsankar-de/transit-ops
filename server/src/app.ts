@@ -8,6 +8,7 @@ import { errorMiddleware } from "./middlewares/error.middleware";
 import userRouter from "./routes/user.route";
 import roleRouter from "./routes/role.route";
 import vehicleRouter from "./routes/vehicle.route";
+import driverRouter from "./routes/driver.route";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use(morgan("dev"));
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/roles", roleRouter);
 app.use("/api/v1/vehicles", vehicleRouter);
+app.use("/api/v1/drivers", driverRouter);
 
 // error middleware
 app.use(errorMiddleware);

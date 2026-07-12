@@ -1,6 +1,6 @@
 model Role {
-  id          String   @id @default(uuid())
-  name        String   @unique // Admin, FleetManager, Dispatcher, Driver, Viewer
-  permissions Json     // e.g. ["vehicle:create","trip:dispatch","report:view"]
-  users       User[]
+    id          String @id @default(uuid())
+    name        String @unique
+    permissions Json
+    users       User[]
 }
