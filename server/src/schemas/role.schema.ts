@@ -17,11 +17,11 @@ export const updateRoleSchema = z.object({
 export type CreateRoleInput = z.infer<typeof createRoleSchema>;
 export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;
 
-const roleSortFields = ["name", "createdAt"] as const;
+const roleSortFields = ["name"] as const;
 
 export const listRolesQuerySchema = paginationQuerySchema.extend({
   search: z.string().optional(),
-  sortBy: z.enum(roleSortFields).default("createdAt"),
+  sortBy: z.enum(roleSortFields).default("name"),
   sortOrder: sortOrderSchema,
 });
 
