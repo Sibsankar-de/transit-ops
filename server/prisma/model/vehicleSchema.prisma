@@ -9,8 +9,8 @@ model Vehicle {
   id                 String        @id @default(uuid())
   registrationNumber String        @unique
   name               String
-  type               String       
-  maxLoadCapacity    Decimal      
+  type               String
+  maxLoadCapacity    Decimal
   odometer           Decimal
   acquisitionCost    Decimal
   region             String

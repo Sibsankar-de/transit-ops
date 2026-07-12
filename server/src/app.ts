@@ -9,6 +9,7 @@ import userRouter from "./routes/user.route";
 import roleRouter from "./routes/role.route";
 import vehicleRouter from "./routes/vehicle.route";
 import driverRouter from "./routes/driver.route";
+import tripRouter from "./routes/trip.route";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/roles", roleRouter);
 app.use("/api/v1/vehicles", vehicleRouter);
 app.use("/api/v1/drivers", driverRouter);
+app.use("/api/v1/trips", tripRouter);
 
 // error middleware
 app.use(errorMiddleware);

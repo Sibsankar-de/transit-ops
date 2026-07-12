@@ -1,12 +1,12 @@
-enum TripStatus { 
-    DRAFT 
-    DISPATCHED 
-    COMPLETED 
-    CANCELLED
+enum TripStatus {
+  DRAFT
+  DISPATCHED
+  COMPLETED
+  CANCELLED
 }
 
 model Trip {
-  id              String   @id @default(uuid())
+  id              String     @id @default(uuid())
   source          String
   destination     String
   vehicleId       String
@@ -16,17 +16,16 @@ model Trip {
   actualDistance  Decimal?
   finalOdometer   Decimal?
   fuelConsumed    Decimal?
-  revenue         Decimal? 
+  revenue         Decimal?
   status          TripStatus @default(DRAFT)
   dispatchedAt    DateTime?
   completedAt     DateTime?
   cancelledAt     DateTime?
   createdById     String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
-  vehicle         Vehicle  @relation(fields: [vehicleId], references: [id])
-  driver          Driver   @relation(fields: [driverId], references: [id])
-  fuelLogs        FuelLog[]
+  vehicle  Vehicle   @relation(fields: [vehicleId], references: [id])
+  driver   Driver    @relation(fields: [driverId], references: [id])
+  fuelLogs FuelLog[]
 }
-

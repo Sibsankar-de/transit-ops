@@ -95,3 +95,7 @@ export async function getChannel(): Promise<Channel> {
 
   return channelPromise;
 }
+
+export async function connectRabbit(): Promise<void> {
+  await getChannel();
+}

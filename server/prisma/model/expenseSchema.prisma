@@ -1,17 +1,17 @@
-enum ExpenseType { 
-    TOLL 
-    MAINTENANCE 
-    OTHER 
+enum ExpenseType {
+  TOLL
+  MAINTENANCE
+  OTHER
 }
 
 model Expense {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   vehicleId   String
   type        ExpenseType
   amount      Decimal
   date        DateTime
   description String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime    @default(now())
 
-  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
 }

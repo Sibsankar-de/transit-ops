@@ -1,4 +1,7 @@
 import { Router } from "express";
+import { verifyJWT } from "../middlewares/auth.middleware";
+import { requirePermission } from "../middlewares/rbac.middleware";
+import { Permission } from "../enums/permission.enum";
 import {
   createDriverHandler,
   getDriverByIdHandler,
@@ -9,10 +12,35 @@ import {
 
 const router = Router();
 
-router.post("/create", createDriverHandler);
-router.get("/", getAllDriversHandler);
-router.get("/:id", getDriverByIdHandler);
-router.patch("/update/:id", updateDriverHandler);
-router.delete("/delete/:id", deleteDriverHandler);
+router.post(
+  "/create",
+  verifyJWT,
+  requirePermission(Permission.DRIVER_CREATE),
+  createDriverHandler,
+);
+router.get(
+  "/",
+  verifyJWT,
+  requirePermission(Permission.DRIVER_READ),
+  getAllDriversHandler,
+);
+router.get(
+  "/:id",
+  verifyJWT,
+  requirePermission(Permission.DRIVER_READ),
+  getDriverByIdHandler,
+);
+router.patch(
+  "/update/:id",
+  verifyJWT,
+  requirePermission(Permission.DRIVER_UPDATE),
+  updateDriverHandler,
+);
+router.delete(
+  "/delete/:id",
+  verifyJWT,
+  requirePermission(Permission.DRIVER_DELETE),
+  deleteDriverHandler,
+);
 
 export default router;
