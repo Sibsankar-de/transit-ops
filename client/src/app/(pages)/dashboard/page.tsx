@@ -149,7 +149,7 @@ export default function DashboardPage() {
               { key: "nakuru", value: "Nakuru" },
             ]}
             onChange={setRegionFilter}
-            className="w-[140px]"
+            className="w-35"
           />
           <Select
             placeholder="All Types"
@@ -161,13 +161,13 @@ export default function DashboardPage() {
               { key: "tanker", value: "Tanker" },
             ]}
             onChange={setTypeFilter}
-            className="w-[130px]"
+            className="w-32.5"
           />
         </div>
 
         {/* Date Filters */}
         <div className="flex items-center gap-2">
-          <div className="w-[140px]">
+          <div className="w-35">
             <Input
               type="date"
               value={startDate}
@@ -175,7 +175,7 @@ export default function DashboardPage() {
             />
           </div>
           <span className="text-muted-foreground text-sm font-medium">to</span>
-          <div className="w-[140px]">
+          <div className="w-35">
             <Input
               type="date"
               value={endDate}
@@ -231,9 +231,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Row 2: Vehicle Status Donut & Weekly Trips Line Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Vehicle Status (Pie/Donut) */}
         <div className="bg-card rounded-xl border border-border p-6 flex flex-col justify-between">
           <h3 className="text-sm font-bold text-foreground mb-4">
             Vehicle Status
@@ -297,10 +295,14 @@ export default function DashboardPage() {
               <span>+12% vs last week</span>
             </span>
           </h3>
-          <div className="h-[200px] w-full">
+          <div className="h-50 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={WEEKLY_TRIPS_DATA}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e2d45" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#1e2d45"
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="name"
                   stroke="#64748b"
@@ -317,7 +319,10 @@ export default function DashboardPage() {
                   itemStyle={{ fontSize: "12px" }}
                   labelStyle={{ fontSize: "12px", fontWeight: "bold" }}
                 />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
+                <Legend
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
+                />
                 <Line
                   type="monotone"
                   dataKey="Completed"
@@ -340,17 +345,20 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Row 3: Fuel Consumption & Monthly Operational Cost */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Fuel Consumption */}
         <div className="bg-card rounded-xl border border-border p-6">
           <h3 className="text-sm font-bold text-foreground mb-4">
             Fuel Consumption (litres)
           </h3>
-          <div className="h-[220px] w-full">
+          <div className="h-55 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={FUEL_CONSUMPTION_DATA}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e2d45" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#1e2d45"
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="name"
                   stroke="#64748b"
@@ -385,10 +393,14 @@ export default function DashboardPage() {
           <h3 className="text-sm font-bold text-foreground mb-4">
             Monthly Operational Cost (KES)
           </h3>
-          <div className="h-[220px] w-full">
+          <div className="h-55 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={MONTHLY_COST_DATA}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e2d45" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#1e2d45"
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="name"
                   stroke="#64748b"
@@ -405,17 +417,34 @@ export default function DashboardPage() {
                   itemStyle={{ fontSize: "12px" }}
                   labelStyle={{ fontSize: "12px", fontWeight: "bold" }}
                 />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
-                <Bar dataKey="Fuel" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="Maintenance" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="Other" stackId="a" fill="#64748b" radius={[4, 4, 0, 0]} />
+                <Legend
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
+                />
+                <Bar
+                  dataKey="Fuel"
+                  stackId="a"
+                  fill="#f59e0b"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar
+                  dataKey="Maintenance"
+                  stackId="a"
+                  fill="#3b82f6"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar
+                  dataKey="Other"
+                  stackId="a"
+                  fill="#64748b"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Row 4: Recent Trips Table (Full width) */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
         <div className="p-6 border-b border-border">
           <h3 className="text-sm font-bold text-foreground">Recent Trips</h3>
@@ -464,7 +493,7 @@ export default function DashboardPage() {
                         trip.status === TripStatus.DISPATCHED &&
                           "bg-blue-500/10 text-blue-400 border border-blue-500/20",
                         trip.status === TripStatus.CANCELLED &&
-                          "bg-red-500/10 text-red-400 border border-red-500/20"
+                          "bg-red-500/10 text-red-400 border border-red-500/20",
                       )}
                     >
                       {trip.status}
