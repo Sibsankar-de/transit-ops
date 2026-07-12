@@ -23,16 +23,17 @@ export function AddDriverModal({
       header={
         <ModalHeader
           title="Add Driver"
-          subtitle="Add a new driver to the platform"
+          subtitle="Link a user account to create a new driver profile"
         />
       }
-      className="w-[95vw] max-w-[600px]"
+      className="w-[95vw] max-w-[640px]"
     >
       <DriverForm
         onSubmit={onAdd}
         onCancel={onClose}
         submitLabel="Add Driver"
         isSubmitting={isSubmitting}
+        showUserPicker={true}
       />
     </Modal>
   );

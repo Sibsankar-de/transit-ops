@@ -195,11 +195,8 @@ export default function DriversPage() {
 
   const handleAddDriver = async (data: DriverFormValues) => {
     try {
-      // NOTE: The DriverForm does not yet collect a userId (linked User account).
-      // Until the form is updated, the userId will need to be passed by the parent
-      // or selected via a User lookup field. Using empty string as temporary placeholder.
       await createDriver({
-        userId: "", // TODO: Add userId lookup field to DriverForm
+        userId: data.userId ?? "",
         licenseNumber: data.licenseNo,
         licenseCategory: data.category,
         licenseExpiryDate: data.expiry,

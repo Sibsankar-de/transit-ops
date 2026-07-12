@@ -2,11 +2,12 @@
 
 import { Modal, ModalHeader } from "@/components/ui/Modal";
 import { DriverForm, DriverFormValues } from "./DriverForm";
+import { Driver } from "@/types/api";
 
 interface EditDriverModalProps {
   open: boolean;
   onClose: () => void;
-  driver: any | null;
+  driver: Driver | null;
   onSave: (data: DriverFormValues) => void;
   isSubmitting?: boolean;
 }
@@ -20,6 +21,8 @@ export function EditDriverModal({
 }: EditDriverModalProps) {
   if (!driver) return null;
 
+  const driverName = driver.user?.name ?? driver.userId;
+
   return (
     <Modal
       openState={open}
@@ -27,25 +30,26 @@ export function EditDriverModal({
       header={
         <ModalHeader
           title="Edit Driver"
-          subtitle={`Update details for ${driver.name}`}
+          subtitle={`Update license details for ${driverName}`}
         />
       }
-      className="w-[95vw] max-w-[600px]"
+      className="w-[95vw] max-w-[640px]"
     >
       <DriverForm
         onSubmit={onSave}
         onCancel={onClose}
         defaultValues={{
-          name: driver.name,
-          licenseNo: driver.licenseNo,
-          category: driver.category,
-          expiry: driver.expiry,
-          contact: driver.contact,
+          licenseNo: driver.licenseNumber,
+          category: driver.licenseCategory,
+          expiry: driver.licenseExpiryDate
+            ? new Date(driver.licenseExpiryDate).toISOString().split("T")[0]
+            : "",
           safetyScore: driver.safetyScore,
           status: driver.status,
         }}
         submitLabel="Save Changes"
         isSubmitting={isSubmitting}
+        showUserPicker={false}
       />
     </Modal>
   );

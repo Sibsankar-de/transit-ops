@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { DriverStatus } from "@/enums/driverStatus.enum";
@@ -8,13 +8,18 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { UserSearchCombobox } from "@/components/drivers/UserSearchCombobox";
 
-export const driverSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+// ──────────────────────────────────────────────────────────────────────────────
+// Schema
+// ──────────────────────────────────────────────────────────────────────────────
+
+/** Add mode — userId is required */
+export const addDriverSchema = z.object({
+  userId: z.string().uuid("Please select a valid user"),
   licenseNo: z.string().min(1, "License number is required"),
   category: z.string().min(1, "Category is required"),
   expiry: z.string().min(1, "Expiry date is required"),
-  contact: z.string().min(5, "Contact details are required"),
   safetyScore: z
     .number()
     .min(0, "Safety score cannot be negative")
@@ -22,7 +27,32 @@ export const driverSchema = z.object({
   status: z.nativeEnum(DriverStatus),
 });
 
-export type DriverFormValues = z.infer<typeof driverSchema>;
+/** Edit mode — userId is not editable */
+export const editDriverSchema = z.object({
+  userId: z.string().optional(),
+  licenseNo: z.string().min(1, "License number is required"),
+  category: z.string().min(1, "Category is required"),
+  expiry: z.string().min(1, "Expiry date is required"),
+  safetyScore: z
+    .number()
+    .min(0, "Safety score cannot be negative")
+    .max(100, "Safety score cannot exceed 100"),
+  status: z.nativeEnum(DriverStatus),
+});
+
+/** Union type used by both modes */
+export type DriverFormValues = {
+  userId?: string;
+  licenseNo: string;
+  category: string;
+  expiry: string;
+  safetyScore: number;
+  status: DriverStatus;
+};
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Props
+// ──────────────────────────────────────────────────────────────────────────────
 
 interface DriverFormProps {
   onSubmit: (data: DriverFormValues) => void;
@@ -30,6 +60,8 @@ interface DriverFormProps {
   defaultValues?: Partial<DriverFormValues>;
   isSubmitting?: boolean;
   submitLabel?: string;
+  /** When true (Add mode) a user selector is shown. When false (Edit mode) it is hidden. */
+  showUserPicker?: boolean;
 }
 
 const CATEGORIES = ["A", "B", "C", "D", "E", "CE"];
@@ -38,21 +70,27 @@ const STATUS_OPTIONS = Object.values(DriverStatus).map((status) => ({
   value: status.toLowerCase().replace(/_/g, " "),
 }));
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Component
+// ──────────────────────────────────────────────────────────────────────────────
+
 export function DriverForm({
   onSubmit,
   onCancel,
   defaultValues,
   isSubmitting = false,
   submitLabel = "Save",
+  showUserPicker = false,
 }: DriverFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     setValue,
     watch,
     formState: { errors },
   } = useForm<DriverFormValues>({
-    resolver: zodResolver(driverSchema),
+    resolver: zodResolver(showUserPicker ? addDriverSchema : editDriverSchema) as any,
     defaultValues: {
       status: DriverStatus.AVAILABLE,
       safetyScore: 85,
@@ -63,6 +101,9 @@ export function DriverForm({
   const selectedCategory = watch("category");
   const selectedStatus = watch("status");
 
+  /** Adapter: our Input/Select components call onChange with a raw string value,
+   *  but react-hook-form register() returns an onChange that expects a SyntheticEvent.
+   *  This adapter bridges the gap. */
   const registerInput = (registerField: any) => ({
     name: registerField.name,
     onBlur: registerField.onBlur,
@@ -82,18 +123,26 @@ export function DriverForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="name" required>
-            Name
-          </Label>
-          <Input
-            id="name"
-            placeholder="e.g. Felix Mutua"
-            error={errors.name?.message}
-            {...registerInput(register("name"))}
-          />
-        </div>
 
+        {/* ── User Picker (Add mode only) ── */}
+        {showUserPicker && (
+          <div className="md:col-span-2">
+            <Label required>Linked User Account</Label>
+            <Controller
+              name="userId"
+              control={control}
+              render={({ field }) => (
+                <UserSearchCombobox
+                  value={field.value ?? ""}
+                  onChange={(userId) => field.onChange(userId)}
+                  error={errors.userId?.message}
+                />
+              )}
+            />
+          </div>
+        )}
+
+        {/* ── License Number ── */}
         <div>
           <Label htmlFor="licenseNo" required>
             License No.
@@ -106,6 +155,7 @@ export function DriverForm({
           />
         </div>
 
+        {/* ── License Category ── */}
         <div>
           <Label htmlFor="category" required>
             Category
@@ -121,6 +171,7 @@ export function DriverForm({
           />
         </div>
 
+        {/* ── Expiry Date ── */}
         <div>
           <Label htmlFor="expiry" required>
             Expiry Date
@@ -133,21 +184,10 @@ export function DriverForm({
           />
         </div>
 
-        <div>
-          <Label htmlFor="contact" required>
-            Contact
-          </Label>
-          <Input
-            id="contact"
-            placeholder="e.g. +254 712 441 200"
-            error={errors.contact?.message}
-            {...registerInput(register("contact"))}
-          />
-        </div>
-
+        {/* ── Safety Score ── */}
         <div>
           <Label htmlFor="safetyScore" required>
-            Safety Score (0-100)
+            Safety Score (0–100)
           </Label>
           <Input
             id="safetyScore"
@@ -158,6 +198,7 @@ export function DriverForm({
           />
         </div>
 
+        {/* ── Status ── */}
         <div>
           <Label htmlFor="status" required>
             Status
