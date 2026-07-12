@@ -40,3 +40,36 @@ export async function sendUserInviteEmail(
 
   log.info(`User invite email job enqueued for: ${data.email}`);
 }
+
+export interface LicenseExpiryEmailData {
+  driverName: string;
+  email: string;
+  licenseNumber: string;
+  expiryDate: string;
+}
+
+export async function sendLicenseExpiryEmail(
+  data: LicenseExpiryEmailData,
+): Promise<void> {
+  log.info(`Sending license expiry email to: ${data.email}`);
+
+  const templateData = {
+    driverName: data.driverName,
+    licenseNumber: data.licenseNumber,
+    expiryDate: data.expiryDate,
+    year: new Date().getFullYear(),
+  };
+
+  const html = await renderEmail({
+    templateName: "licenseExpiryEmailTemplate.mjml",
+    data: templateData,
+  });
+
+  await publishEmailJob({
+    to: data.email,
+    subject: "⚠️ Action Required: Your Driver's License Has Expired",
+    html,
+  });
+
+  log.info(`License expiry email job enqueued for: ${data.email}`);
+}
