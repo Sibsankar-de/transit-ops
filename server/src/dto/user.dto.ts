@@ -5,6 +5,6 @@ export function toSafeUser(user: any): SafeUser {
   const { passwordHash: _ph, refreshToken: _rt, role, ...safe } = user;
   return {
     ...safe,
-    role: toSafeRole(role),
+    role: role ? toSafeRole(role) : null,
   };
 }
