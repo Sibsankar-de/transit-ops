@@ -2,10 +2,12 @@ import { apiSlice } from "../apiSlice";
 import { 
   User, 
   ApiResponse, 
+  PaginatedResponse,
   CreateUserInput, 
   LoginInput, 
   UpdateUserInput, 
-  UpdatePasswordInput 
+  UpdatePasswordInput,
+  ListUsersParams
 } from "@/types/api";
 
 export const usersApiSlice = apiSlice.injectEndpoints({
@@ -48,10 +50,19 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         body: passwordData,
       }),
     }),
-    
-    // Missing in backend - outlined for future use
-    getUsers: builder.query<ApiResponse<User[]>, void>({
-      query: () => "/users", // TODO: backend missing GET /users
+    getUsers: builder.query<ApiResponse<PaginatedResponse<User>>, ListUsersParams | void>({
+      query: (params = {}) => ({
+        url: "/users",
+        params: {
+          page: params?.page ?? 1,
+          limit: params?.limit ?? 10,
+          ...(params?.search && { search: params.search }),
+          ...(params?.status && { status: params.status }),
+          ...(params?.roleId && { roleId: params.roleId }),
+          ...(params?.sortBy && { sortBy: params.sortBy }),
+          ...(params?.sortOrder && { sortOrder: params.sortOrder }),
+        },
+      }),
       providesTags: ["User"],
     }),
     getCurrentUser: builder.query<ApiResponse<User>, void>({

@@ -386,3 +386,17 @@ export interface ListExpensesParams extends PaginationParams {
   sortBy?: "date" | "amount" | "createdAt";
   sortOrder?: "asc" | "desc";
 }
+
+export interface ListUsersParams extends PaginationParams {
+  search?: string;
+  status?: UserStatus;
+  roleId?: string;
+  sortBy?: "createdAt" | "name" | "email";
+  sortOrder?: "asc" | "desc";
+}
+
+export interface ListRolesParams extends PaginationParams {
+  search?: string;
+  sortBy?: "name" | "createdAt";
+  sortOrder?: "asc" | "desc";
+}

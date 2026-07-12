@@ -137,8 +137,8 @@ export const AccessPermissionSettings = () => {
   const { success, error, warning } = useToast();
 
   // RTK Query hooks
-  const { data: usersResponse, isLoading: isUsersLoading } = useGetUsersQuery();
-  const { data: rolesResponse, isLoading: isRolesLoading } = useGetRolesQuery();
+  const { data: usersResponse, isLoading: isUsersLoading } = useGetUsersQuery({ limit: 1000 });
+  const { data: rolesResponse, isLoading: isRolesLoading } = useGetRolesQuery({ limit: 1000 });
 
   const [createUser] = useCreateUserMutation();
   const [updateUser] = useUpdateUserMutation();
@@ -146,8 +146,8 @@ export const AccessPermissionSettings = () => {
   const [createRole] = useCreateRoleMutation();
   const [deleteRole] = useDeleteRoleMutation();
 
-  const users = usersResponse?.data || [];
-  const roles = rolesResponse?.data || [];
+  const users = usersResponse?.data?.docs || [];
+  const roles = rolesResponse?.data?.docs || [];
 
   // Search & Filter
   const [userSearch, setUserSearch] = useState("");
