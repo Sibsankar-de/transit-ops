@@ -11,11 +11,14 @@ import { Button } from "@/components/ui/Button";
 
 export const driverSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  licenseNo: z.string().min(3, "License number is required"),
+  licenseNo: z.string().min(1, "License number is required"),
   category: z.string().min(1, "Category is required"),
   expiry: z.string().min(1, "Expiry date is required"),
   contact: z.string().min(5, "Contact details are required"),
-  safetyScore: z.number().min(0).max(100, "Safety score must be between 0 and 100"),
+  safetyScore: z
+    .number()
+    .min(0, "Safety score cannot be negative")
+    .max(100, "Safety score cannot exceed 100"),
   status: z.nativeEnum(DriverStatus),
 });
 
@@ -86,12 +89,9 @@ export function DriverForm({
           <Input
             id="name"
             placeholder="e.g. Felix Mutua"
-            isInvalid={!!errors.name}
+            error={errors.name?.message}
             {...registerInput(register("name"))}
           />
-          {errors.name && (
-            <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
-          )}
         </div>
 
         <div>
@@ -101,14 +101,9 @@ export function DriverForm({
           <Input
             id="licenseNo"
             placeholder="e.g. DL-KE-04421"
-            isInvalid={!!errors.licenseNo}
+            error={errors.licenseNo?.message}
             {...registerInput(register("licenseNo"))}
           />
-          {errors.licenseNo && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.licenseNo.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -122,12 +117,8 @@ export function DriverForm({
             onChange={(val) =>
               setValue("category", val, { shouldValidate: true })
             }
+            error={errors.category?.message}
           />
-          {errors.category && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.category.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -137,12 +128,9 @@ export function DriverForm({
           <Input
             id="expiry"
             type="date"
-            isInvalid={!!errors.expiry}
+            error={errors.expiry?.message}
             {...registerInput(register("expiry"))}
           />
-          {errors.expiry && (
-            <p className="text-red-500 text-xs mt-1">{errors.expiry.message}</p>
-          )}
         </div>
 
         <div>
@@ -152,12 +140,9 @@ export function DriverForm({
           <Input
             id="contact"
             placeholder="e.g. +254 712 441 200"
-            isInvalid={!!errors.contact}
+            error={errors.contact?.message}
             {...registerInput(register("contact"))}
           />
-          {errors.contact && (
-            <p className="text-red-500 text-xs mt-1">{errors.contact.message}</p>
-          )}
         </div>
 
         <div>
@@ -168,14 +153,9 @@ export function DriverForm({
             id="safetyScore"
             type="number"
             placeholder="e.g. 85"
-            isInvalid={!!errors.safetyScore}
+            error={errors.safetyScore?.message}
             {...registerInput(register("safetyScore", { valueAsNumber: true }))}
           />
-          {errors.safetyScore && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.safetyScore.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -189,10 +169,8 @@ export function DriverForm({
             onChange={(val) =>
               setValue("status", val as DriverStatus, { shouldValidate: true })
             }
+            error={errors.status?.message}
           />
-          {errors.status && (
-            <p className="text-red-500 text-xs mt-1">{errors.status.message}</p>
-          )}
         </div>
       </div>
 

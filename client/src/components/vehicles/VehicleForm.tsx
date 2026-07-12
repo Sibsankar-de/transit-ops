@@ -16,7 +16,7 @@ export const vehicleSchema = z.object({
   type: z.string().min(1, "Type is required"),
   capacity: z.number().positive("Capacity must be a positive number"),
   odometer: z.number().nonnegative("Odometer must be non-negative"),
-  acqCost: z.number().positive("Acquisition cost must be positive"),
+  acqCost: z.number().nonnegative("Acquisition cost must be non-negative"),
   status: z.nativeEnum(FleetStatus),
 });
 
@@ -87,14 +87,9 @@ export function VehicleForm({
           <Input
             id="registration"
             placeholder="e.g. KAA 201Z"
-            isInvalid={!!errors.registration}
+            error={errors.registration?.message}
             {...registerInput(register("registration"))}
           />
-          {errors.registration && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.registration.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -104,12 +99,9 @@ export function VehicleForm({
           <Input
             id="make"
             placeholder="e.g. Isuzu"
-            isInvalid={!!errors.make}
+            error={errors.make?.message}
             {...registerInput(register("make"))}
           />
-          {errors.make && (
-            <p className="text-red-500 text-xs mt-1">{errors.make.message}</p>
-          )}
         </div>
 
         <div>
@@ -119,12 +111,9 @@ export function VehicleForm({
           <Input
             id="model"
             placeholder="e.g. FTR"
-            isInvalid={!!errors.model}
+            error={errors.model?.message}
             {...registerInput(register("model"))}
           />
-          {errors.model && (
-            <p className="text-red-500 text-xs mt-1">{errors.model.message}</p>
-          )}
         </div>
 
         <div>
@@ -136,10 +125,8 @@ export function VehicleForm({
             value={selectedType}
             options={VEHICLE_TYPES}
             onChange={(val) => setValue("type", val, { shouldValidate: true })}
+            error={errors.type?.message}
           />
-          {errors.type && (
-            <p className="text-red-500 text-xs mt-1">{errors.type.message}</p>
-          )}
         </div>
 
         <div>
@@ -150,14 +137,9 @@ export function VehicleForm({
             id="capacity"
             type="number"
             placeholder="e.g. 8000"
-            isInvalid={!!errors.capacity}
+            error={errors.capacity?.message}
             {...registerInput(register("capacity", { valueAsNumber: true }))}
           />
-          {errors.capacity && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.capacity.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -168,14 +150,9 @@ export function VehicleForm({
             id="odometer"
             type="number"
             placeholder="e.g. 98420"
-            isInvalid={!!errors.odometer}
+            error={errors.odometer?.message}
             {...registerInput(register("odometer", { valueAsNumber: true }))}
           />
-          {errors.odometer && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.odometer.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -186,14 +163,9 @@ export function VehicleForm({
             id="acqCost"
             type="number"
             placeholder="e.g. 4500000"
-            isInvalid={!!errors.acqCost}
+            error={errors.acqCost?.message}
             {...registerInput(register("acqCost", { valueAsNumber: true }))}
           />
-          {errors.acqCost && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.acqCost.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -207,10 +179,8 @@ export function VehicleForm({
             onChange={(val) =>
               setValue("status", val as FleetStatus, { shouldValidate: true })
             }
+            error={errors.status?.message}
           />
-          {errors.status && (
-            <p className="text-red-500 text-xs mt-1">{errors.status.message}</p>
-          )}
         </div>
       </div>
 

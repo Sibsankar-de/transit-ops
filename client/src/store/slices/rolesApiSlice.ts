@@ -5,7 +5,13 @@ export const rolesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getRoles: builder.query<ApiResponse<Role[]>, void>({
       query: () => "/roles",
-      providesTags: ["Role"],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({ type: "Role" as const, id })),
+              { type: "Role" as const, id: "LIST" },
+            ]
+          : [{ type: "Role" as const, id: "LIST" }],
     }),
     getRoleById: builder.query<ApiResponse<Role>, string>({
       query: (id) => `/roles/${id}`,
@@ -17,7 +23,7 @@ export const rolesApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: roleData,
       }),
-      invalidatesTags: ["Role"],
+      invalidatesTags: [{ type: "Role", id: "LIST" }],
     }),
     updateRole: builder.mutation<ApiResponse<Role>, { id: string; data: UpdateRoleInput }>({
       query: ({ id, data }) => ({
@@ -25,14 +31,17 @@ export const rolesApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => ["Role", { type: "Role", id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Role", id },
+        { type: "Role", id: "LIST" },
+      ],
     }),
     deleteRole: builder.mutation<ApiResponse<null>, string>({
       query: (id) => ({
         url: `/roles/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Role"],
+      invalidatesTags: [{ type: "Role", id: "LIST" }],
     }),
   }),
 });

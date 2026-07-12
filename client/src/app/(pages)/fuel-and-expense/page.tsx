@@ -1,240 +1,245 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ColumnDef, SortingState, PaginationState } from "@tanstack/react-table";
+import { ColumnDef, PaginationState } from "@tanstack/react-table";
+import { FuelLog, Expense, ExpenseType } from "@/types/api";
 import { DataTable } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Download } from "lucide-react";
 import { cn } from "@/components/utils";
+import {
+  useListFuelLogsQuery,
+  useCreateFuelLogMutation,
+  useDeleteFuelLogMutation,
+} from "@/store/slices/fuelLogsApiSlice";
+import {
+  useListExpensesQuery,
+  useCreateExpenseMutation,
+  useDeleteExpenseMutation,
+} from "@/store/slices/expensesApiSlice";
 
-interface FuelLog {
-  id: string;
-  vehicle: string;
-  date: string;
-  litres: number;
-  cost: number;
-  station: string;
-  odometer: number;
-  region: string;
-}
+const TABS = ["Fuel Logs", "Expenses"];
 
-const INITIAL_LOGS: FuelLog[] = [
-  {
-    id: "FL-1201",
-    vehicle: "KBC 014K",
-    date: "2025-07-11",
-    litres: 280,
-    cost: 42000,
-    station: "Total Thika Rd",
-    odometer: 152100,
-    region: "Nairobi",
-  },
-  {
-    id: "FL-1200",
-    vehicle: "KDB 552Y",
-    date: "2025-07-10",
-    litres: 420,
-    cost: 63000,
-    station: "Kenol Eldoret",
-    odometer: 213100,
-    region: "Eldoret",
-  },
-  {
-    id: "FL-1199",
-    vehicle: "KAA 201Z",
-    date: "2025-07-09",
-    litres: 210,
-    cost: 31500,
-    station: "Total Mombasa Rd",
-    odometer: 98200,
-    region: "Nairobi",
-  },
-  {
-    id: "FL-1198",
-    vehicle: "KLA 002B",
-    date: "2025-07-08",
-    litres: 160,
-    cost: 24000,
-    station: "Shell Westlands",
-    odometer: 61900,
-    region: "Nairobi",
-  },
-  {
-    id: "FL-1197",
-    vehicle: "KJA 445R",
-    date: "2025-07-07",
-    litres: 580,
-    cost: 87000,
-    station: "Rubis Mombasa",
-    odometer: 411700,
-    region: "Mombasa",
-  },
-  {
-    id: "FL-1196",
-    vehicle: "KHA 112P",
-    date: "2025-07-06",
-    litres: 190,
-    cost: 28500,
-    station: "Total Nakuru",
-    odometer: 77600,
-    region: "Nakuru",
-  },
-];
-
-const TABS = ["Fuel", "Expenses", "Cost", "Efficiency"];
+const DEFAULT_PAGE_SIZE = 10;
 
 export default function FuelAndExpensePage() {
-  const [logs] = useState<FuelLog[]>(INITIAL_LOGS);
-  const [activeTab, setActiveTab] = useState("Fuel");
+  const [activeTab, setActiveTab] = useState("Fuel Logs");
   const [vehicleFilter, setVehicleFilter] = useState("");
-  const [regionFilter, setRegionFilter] = useState("");
 
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState<PaginationState>({
+  // Separate pagination state per tab
+  const [fuelPagination, setFuelPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: DEFAULT_PAGE_SIZE,
+  });
+  const [expensePagination, setExpensePagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DEFAULT_PAGE_SIZE,
   });
 
-  // Unique filters lists
-  const vehicleOptions = useMemo(() => {
-    const unique = Array.from(new Set(logs.map((l) => l.vehicle)));
-    return [{ key: "", value: "All Vehicles" }, ...unique.map((v) => ({ key: v, value: v }))];
-  }, [logs]);
+  // RTK Query — Fuel Logs
+  const {
+    data: fuelResponse,
+    isLoading: isFuelLoading,
+    isFetching: isFuelFetching,
+  } = useListFuelLogsQuery({
+    page: fuelPagination.pageIndex + 1,
+    limit: fuelPagination.pageSize,
+    ...(vehicleFilter && { vehicleId: vehicleFilter }),
+  });
 
-  const regionOptions = useMemo(() => {
-    const unique = Array.from(new Set(logs.map((l) => l.region)));
-    return [{ key: "", value: "All Regions" }, ...unique.map((r) => ({ key: r, value: r }))];
-  }, [logs]);
+  // RTK Query — Expenses
+  const {
+    data: expenseResponse,
+    isLoading: isExpenseLoading,
+    isFetching: isExpenseFetching,
+  } = useListExpensesQuery({
+    page: expensePagination.pageIndex + 1,
+    limit: expensePagination.pageSize,
+    ...(vehicleFilter && { vehicleId: vehicleFilter }),
+  });
 
-  // Filtering
-  const filteredLogs = useMemo(() => {
-    return logs.filter((l) => {
-      const matchesVehicle = vehicleFilter === "" || l.vehicle === vehicleFilter;
-      const matchesRegion = regionFilter === "" || l.region === regionFilter;
-      return matchesVehicle && matchesRegion;
-    });
-  }, [logs, vehicleFilter, regionFilter]);
+  const [deleteFuelLog] = useDeleteFuelLogMutation();
+  const [deleteExpense] = useDeleteExpenseMutation();
 
-  // Sorting + Pagination
-  const sortedAndPaginatedLogs = useMemo(() => {
-    let result = [...filteredLogs];
+  const fuelLogs = fuelResponse?.data?.docs ?? [];
+  const fuelPageCount = fuelResponse?.data?.totalPages ?? 0;
+  const fuelTotalDocs = fuelResponse?.data?.totalDocs ?? 0;
 
-    if (sorting.length > 0) {
-      const { id, desc } = sorting[0];
-      result.sort((a, b) => {
-        let valA = a[id as keyof FuelLog];
-        let valB = b[id as keyof FuelLog];
+  const expenses = expenseResponse?.data?.docs ?? [];
+  const expensePageCount = expenseResponse?.data?.totalPages ?? 0;
+  const expenseTotalDocs = expenseResponse?.data?.totalDocs ?? 0;
 
-        if (typeof valA === "string" && typeof valB === "string") {
-          return desc ? valB.localeCompare(valA) : valA.localeCompare(valB);
-        } else {
-          return desc
-            ? (valB as number) - (valA as number)
-            : (valA as number) - (valB as number);
-        }
-      });
-    }
+  // Aggregate stats from current pages (server would provide summary endpoints)
+  const totalFuelCost = useMemo(
+    () => fuelLogs.reduce((sum, l) => sum + l.cost, 0),
+    [fuelLogs]
+  );
+  const totalExpenseAmount = useMemo(
+    () => expenses.reduce((sum, e) => sum + e.amount, 0),
+    [expenses]
+  );
+  const totalFuelLiters = useMemo(
+    () => fuelLogs.reduce((sum, l) => sum + l.liters, 0),
+    [fuelLogs]
+  );
 
-    const start = pagination.pageIndex * pagination.pageSize;
-    return result.slice(start, start + pagination.pageSize);
-  }, [filteredLogs, sorting, pagination]);
+  // Fuel Log columns
+  const fuelColumns = useMemo<ColumnDef<FuelLog>[]>(() => [
+    {
+      accessorKey: "id",
+      header: "Log ID",
+      cell: ({ row }) => (
+        <span className="font-mono text-primary font-bold tracking-wider text-xs">
+          {row.original.id.slice(0, 8).toUpperCase()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "vehicle",
+      header: "Vehicle",
+      cell: ({ row }) => (
+        <span className="font-semibold text-foreground text-sm">
+          {row.original.vehicle?.registrationNumber ?? row.original.vehicleId}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => (
+        <span className="text-secondary-foreground">
+          {new Date(row.original.date).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "liters",
+      header: "Litres",
+      cell: ({ row }) => (
+        <span className="text-secondary-foreground font-mono font-medium">
+          {row.original.liters} L
+        </span>
+      ),
+    },
+    {
+      accessorKey: "cost",
+      header: "Cost (KES)",
+      cell: ({ row }) => (
+        <span className="text-secondary-foreground font-mono font-medium">
+          {row.original.cost.toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <button
+          onClick={async () => {
+            if (confirm("Delete this fuel log?")) {
+              try { await deleteFuelLog(row.original.id).unwrap(); }
+              catch (err: any) { alert(err?.data?.message ?? "Failed to delete fuel log."); }
+            }
+          }}
+          className="text-xs text-red-400 hover:underline cursor-pointer"
+        >
+          Delete
+        </button>
+      ),
+    },
+  ], [deleteFuelLog]);
 
-  const pageCount = Math.ceil(filteredLogs.length / pagination.pageSize);
-
-  const columns = useMemo<ColumnDef<FuelLog>[]>(() => {
-    return [
-      {
-        accessorKey: "id",
-        header: "Log ID",
-        cell: ({ row }) => (
-          <span className="font-mono text-primary font-bold tracking-wider cursor-pointer hover:underline">
-            {row.original.id}
+  // Expense columns
+  const expenseColumns = useMemo<ColumnDef<Expense>[]>(() => [
+    {
+      accessorKey: "id",
+      header: "Expense ID",
+      cell: ({ row }) => (
+        <span className="font-mono text-primary font-bold tracking-wider text-xs">
+          {row.original.id.slice(0, 8).toUpperCase()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "vehicle",
+      header: "Vehicle",
+      cell: ({ row }) => (
+        <span className="font-semibold text-foreground text-sm">
+          {row.original.vehicle?.registrationNumber ?? row.original.vehicleId}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => {
+        const typeStyles: Record<ExpenseType, string> = {
+          [ExpenseType.FUEL]: "bg-amber-500/15 text-amber-400 border border-amber-500/30",
+          [ExpenseType.MAINTENANCE]: "bg-blue-500/15 text-blue-400 border border-blue-500/30",
+          [ExpenseType.TOLL]: "bg-purple-500/15 text-purple-400 border border-purple-500/30",
+          [ExpenseType.INSURANCE]: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30",
+          [ExpenseType.PERMIT]: "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30",
+          [ExpenseType.OTHER]: "bg-secondary text-secondary-foreground border border-border",
+        };
+        return (
+          <span className={cn(
+            "inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold capitalize",
+            typeStyles[row.original.type] ?? typeStyles[ExpenseType.OTHER]
+          )}>
+            {row.original.type}
           </span>
-        ),
+        );
       },
-      {
-        accessorKey: "vehicle",
-        header: "Vehicle",
-        cell: ({ row }) => (
-          <span className="font-semibold text-foreground">
-            {row.original.vehicle}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "date",
-        header: "Date",
-        cell: ({ row }) => (
-          <span className="text-secondary-foreground">{row.original.date}</span>
-        ),
-      },
-      {
-        accessorKey: "litres",
-        header: "Litres",
-        cell: ({ row }) => (
-          <span className="text-secondary-foreground font-mono font-medium">
-            {row.original.litres} L
-          </span>
-        ),
-      },
-      {
-        accessorKey: "cost",
-        header: "Cost (KES)",
-        cell: ({ row }) => (
-          <span className="text-secondary-foreground font-mono font-medium">
-            {row.original.cost.toLocaleString()}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "station",
-        header: "Station",
-        cell: ({ row }) => (
-          <span className="text-secondary-foreground">
-            {row.original.station}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "odometer",
-        header: "Odometer",
-        cell: ({ row }) => (
-          <span className="text-secondary-foreground font-mono">
-            {row.original.odometer.toLocaleString()} km
-          </span>
-        ),
-      },
-      {
-        accessorKey: "region",
-        header: "Region",
-        cell: ({ row }) => (
-          <span className="text-secondary-foreground">
-            {row.original.region}
-          </span>
-        ),
-      },
-    ];
-  }, []);
+    },
+    {
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => (
+        <span className="text-secondary-foreground">
+          {new Date(row.original.date).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "amount",
+      header: "Amount (KES)",
+      cell: ({ row }) => (
+        <span className="text-secondary-foreground font-mono font-medium">
+          {row.original.amount.toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }) => (
+        <span className="text-secondary-foreground truncate max-w-[160px] block">
+          {row.original.description ?? "—"}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <button
+          onClick={async () => {
+            if (confirm("Delete this expense?")) {
+              try { await deleteExpense(row.original.id).unwrap(); }
+              catch (err: any) { alert(err?.data?.message ?? "Failed to delete expense."); }
+            }
+          }}
+          className="text-xs text-red-400 hover:underline cursor-pointer"
+        >
+          Delete
+        </button>
+      ),
+    },
+  ], [deleteExpense]);
 
-  const handleExportCSV = () => {
-    const headers = "Log ID,Vehicle,Date,Litres,Cost (KES),Station,Odometer,Region\n";
-    const rows = filteredLogs
-      .map(
-        (l) =>
-          `${l.id},${l.vehicle},${l.date},${l.litres},${l.cost},${l.station},${l.odometer},${l.region}`
-      )
-      .join("\n");
-    
-    const blob = new Blob([headers + rows], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `fuel-logs-${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
+  const isLoading = isFuelLoading || isExpenseLoading;
+  const isFetching = isFuelFetching || isExpenseFetching;
 
   return (
     <div className="space-y-6">
@@ -242,31 +247,35 @@ export default function FuelAndExpensePage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Total Fuel Cost"
-          value="KES 276,000"
-          subtitle="This month"
+          value={`KES ${totalFuelCost.toLocaleString()}`}
+          subtitle={`${fuelTotalDocs} fuel entries`}
           color="text-primary"
         />
         <StatsCard
-          title="Maintenance Cost"
-          value="KES 177,000"
-          subtitle="This month"
+          title="Total Expenses"
+          value={`KES ${totalExpenseAmount.toLocaleString()}`}
+          subtitle={`${expenseTotalDocs} expense entries`}
           color="text-blue-400"
         />
         <StatsCard
-          title="Other Expenses"
-          value="KES 148,000"
-          subtitle="This month"
+          title="Total Fuel Volume"
+          value={`${totalFuelLiters.toLocaleString()} L`}
+          subtitle="Current page aggregate"
           color="text-purple-400"
         />
         <StatsCard
-          title="Avg Cost Per KM"
-          value="KES 152"
+          title="Avg Cost / Litre"
+          value={
+            totalFuelLiters > 0
+              ? `KES ${(totalFuelCost / totalFuelLiters).toFixed(2)}`
+              : "—"
+          }
           subtitle="Fleet average"
           color="text-emerald-400"
         />
       </div>
 
-      {/* Tabs and filters toolbar */}
+      {/* Tabs toolbar */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-t border-border/40 pt-4">
         <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-lg border border-border/50 w-fit">
           {TABS.map((tab) => (
@@ -284,79 +293,60 @@ export default function FuelAndExpensePage() {
             </button>
           ))}
         </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <Select
-            placeholder="All Vehicles"
-            value={vehicleFilter}
-            options={vehicleOptions}
-            onChange={(val) => {
-              setVehicleFilter(val);
-              setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-            }}
-            className="w-[140px]"
-          />
-
-          <Select
-            placeholder="All Regions"
-            value={regionFilter}
-            options={regionOptions}
-            onChange={(val) => {
-              setRegionFilter(val);
-              setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-            }}
-            className="w-[140px]"
-          />
-
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 border-border hover:bg-secondary h-10 px-4"
-            onClick={handleExportCSV}
-          >
-            <Download size={15} />
-            <span>Export CSV</span>
-          </Button>
-        </div>
       </div>
 
-      {/* Main logs table */}
-      <DataTable
-        columns={columns}
-        data={sortedAndPaginatedLogs}
-        pageCount={pageCount}
-        pagination={pagination}
-        onPaginationChange={setPagination}
-        sorting={sorting}
-        onSortingChange={setSorting}
-        emptyState={
-          <div className="flex flex-col items-center justify-center p-12 text-center">
-            <p className="text-muted-foreground text-sm">No fuel logs found.</p>
-          </div>
-        }
-      />
+      {/* Main table */}
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : activeTab === "Fuel Logs" ? (
+        <DataTable
+          columns={fuelColumns}
+          data={fuelLogs}
+          pageCount={fuelPageCount}
+          pagination={fuelPagination}
+          onPaginationChange={setFuelPagination}
+          emptyState={
+            <div className="flex flex-col items-center justify-center p-12 text-center">
+              <p className="text-muted-foreground text-sm">No fuel logs found.</p>
+            </div>
+          }
+        />
+      ) : (
+        <DataTable
+          columns={expenseColumns}
+          data={expenses}
+          pageCount={expensePageCount}
+          pagination={expensePagination}
+          onPaginationChange={setExpensePagination}
+          emptyState={
+            <div className="flex flex-col items-center justify-center p-12 text-center">
+              <p className="text-muted-foreground text-sm">No expenses found.</p>
+            </div>
+          }
+        />
+      )}
+
+      {isFetching && !isLoading && (
+        <div className="fixed bottom-4 right-4 bg-card border border-border rounded-lg px-3 py-2 text-xs text-muted-foreground flex items-center gap-2 shadow-lg">
+          <div className="w-3 h-3 border border-primary border-t-transparent rounded-full animate-spin" />
+          Refreshing...
+        </div>
+      )}
     </div>
   );
 }
 
 function StatsCard({
-  title,
-  value,
-  subtitle,
-  color,
+  title, value, subtitle, color,
 }: {
-  title: string;
-  value: string;
-  subtitle: string;
-  color: string;
+  title: string; value: string; subtitle: string; color: string;
 }) {
   return (
     <div className="bg-card rounded-xl border border-border p-6 space-y-2">
-      <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-        {title}
-      </p>
-      <p className={cn("text-2xl font-bold font-mono tracking-tight", color)}>
-        {value}
-      </p>
+      <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">{title}</p>
+      <p className={cn("text-2xl font-bold font-mono tracking-tight", color)}>{value}</p>
       <p className="text-xs text-muted-foreground/60">{subtitle}</p>
     </div>
   );

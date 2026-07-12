@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/Button";
 export const tripSchema = z.object({
   source: z.string().min(1, "Source is required"),
   destination: z.string().min(1, "Destination is required"),
-  vehicleId: z.string().min(1, "Vehicle is required"),
-  driverId: z.string().min(1, "Driver is required"),
+  vehicleId: z.string().uuid("Invalid vehicle ID"),
+  driverId: z.string().uuid("Invalid driver ID"),
   cargoWeight: z.number().positive("Cargo weight must be a positive number"),
   plannedDistance: z.number().positive("Planned distance must be a positive number"),
 });
@@ -92,12 +92,9 @@ export function TripForm({
           <Input
             id="source"
             placeholder="e.g. Nairobi ICD"
-            isInvalid={!!errors.source}
+            error={errors.source?.message}
             {...registerInput(register("source"))}
           />
-          {errors.source && (
-            <p className="text-red-500 text-xs mt-1">{errors.source.message}</p>
-          )}
         </div>
 
         <div>
@@ -107,14 +104,9 @@ export function TripForm({
           <Input
             id="destination"
             placeholder="e.g. Mombasa Port"
-            isInvalid={!!errors.destination}
+            error={errors.destination?.message}
             {...registerInput(register("destination"))}
           />
-          {errors.destination && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.destination.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -128,12 +120,8 @@ export function TripForm({
             onChange={(val) =>
               setValue("vehicleId", val, { shouldValidate: true })
             }
+            error={errors.vehicleId?.message}
           />
-          {errors.vehicleId && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.vehicleId.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -147,12 +135,8 @@ export function TripForm({
             onChange={(val) =>
               setValue("driverId", val, { shouldValidate: true })
             }
+            error={errors.driverId?.message}
           />
-          {errors.driverId && (
-            <p className="text-red-500 text-xs mt-1 text-left">
-              {errors.driverId.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -163,14 +147,9 @@ export function TripForm({
             id="cargoWeight"
             type="number"
             placeholder="kg"
-            isInvalid={!!errors.cargoWeight}
+            error={errors.cargoWeight?.message}
             {...registerInput(register("cargoWeight", { valueAsNumber: true }))}
           />
-          {errors.cargoWeight && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.cargoWeight.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -181,16 +160,11 @@ export function TripForm({
             id="plannedDistance"
             type="number"
             placeholder="km"
-            isInvalid={!!errors.plannedDistance}
+            error={errors.plannedDistance?.message}
             {...registerInput(
               register("plannedDistance", { valueAsNumber: true })
             )}
           />
-          {errors.plannedDistance && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.plannedDistance.message}
-            </p>
-          )}
         </div>
       </div>
 

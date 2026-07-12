@@ -1,11 +1,27 @@
 import { apiSlice } from "../apiSlice";
-import { Driver, ApiResponse, CreateDriverInput, UpdateDriverInput } from "@/types/api";
+import {
+  Driver,
+  ApiResponse,
+  PaginatedResponse,
+  CreateDriverInput,
+  UpdateDriverInput,
+  ListDriversParams,
+} from "@/types/api";
 
 export const driversApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getDrivers: builder.query<ApiResponse<Driver[]>, void>({
-      query: () => "/drivers",
-      providesTags: ["Driver"],
+    getDrivers: builder.query<ApiResponse<PaginatedResponse<Driver>>, ListDriversParams>({
+      query: (params = {}) => ({
+        url: "/drivers",
+        params: { page: params.page ?? 1, limit: params.limit ?? 10 },
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.docs.map(({ id }) => ({ type: "Driver" as const, id })),
+              { type: "Driver" as const, id: "LIST" },
+            ]
+          : [{ type: "Driver" as const, id: "LIST" }],
     }),
     getDriverById: builder.query<ApiResponse<Driver>, string>({
       query: (id) => `/drivers/${id}`,
@@ -17,7 +33,7 @@ export const driversApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: driverData,
       }),
-      invalidatesTags: ["Driver"],
+      invalidatesTags: [{ type: "Driver", id: "LIST" }],
     }),
     updateDriver: builder.mutation<ApiResponse<Driver>, { id: string; data: UpdateDriverInput }>({
       query: ({ id, data }) => ({
@@ -25,14 +41,17 @@ export const driversApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => ["Driver", { type: "Driver", id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Driver", id },
+        { type: "Driver", id: "LIST" },
+      ],
     }),
     deleteDriver: builder.mutation<ApiResponse<null>, string>({
       query: (id) => ({
         url: `/drivers/delete/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Driver"],
+      invalidatesTags: [{ type: "Driver", id: "LIST" }],
     }),
   }),
 });

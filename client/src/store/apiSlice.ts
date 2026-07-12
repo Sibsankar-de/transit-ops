@@ -11,6 +11,16 @@ export const apiSlice = createApi({
     },
     credentials: "include",
   }),
-  tagTypes: ["User", "Role", "Driver", "Vehicle"],
+  tagTypes: [
+    "User",
+    "Role",
+    "Driver",
+    "Vehicle",
+    "Trip",
+    "MaintenanceLog",
+    "FuelLog",
+    "Expense",
+    "Dashboard",
+  ],
   endpoints: () => ({}),
 });

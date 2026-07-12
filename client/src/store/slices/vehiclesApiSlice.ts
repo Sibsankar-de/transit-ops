@@ -1,5 +1,10 @@
 import { apiSlice } from "../apiSlice";
-import { Vehicle, ApiResponse, CreateVehicleInput, UpdateVehicleInput } from "@/types/api";
+import {
+  Vehicle,
+  ApiResponse,
+  CreateVehicleInput,
+  UpdateVehicleInput,
+} from "@/types/api";
 
 export const vehiclesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -9,7 +14,7 @@ export const vehiclesApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: vehicleData,
       }),
-      invalidatesTags: ["Vehicle"],
+      invalidatesTags: [{ type: "Vehicle", id: "LIST" }],
     }),
     updateVehicle: builder.mutation<ApiResponse<Vehicle>, { id: string; data: UpdateVehicleInput }>({
       query: ({ id, data }) => ({
@@ -17,20 +22,29 @@ export const vehiclesApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => ["Vehicle", { type: "Vehicle", id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Vehicle", id },
+        { type: "Vehicle", id: "LIST" },
+      ],
     }),
     deleteVehicle: builder.mutation<ApiResponse<null>, string>({
       query: (id) => ({
         url: `/vehicles/delete/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Vehicle"],
+      invalidatesTags: [{ type: "Vehicle", id: "LIST" }],
     }),
-
-    // Missing in backend - outlined for future use
+    // NOTE: GET /vehicles is not yet implemented in the backend
+    // It is mapped here for forward compatibility once the route is added
     getVehicles: builder.query<ApiResponse<Vehicle[]>, void>({
-      query: () => "/vehicles", // TODO: backend missing GET /vehicles
-      providesTags: ["Vehicle"],
+      query: () => "/vehicles",
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({ type: "Vehicle" as const, id })),
+              { type: "Vehicle" as const, id: "LIST" },
+            ]
+          : [{ type: "Vehicle" as const, id: "LIST" }],
     }),
   }),
 });
