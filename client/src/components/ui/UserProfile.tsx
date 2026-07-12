@@ -5,6 +5,7 @@ import { Bell, ChevronDown, LogOut, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { Dropdown } from "./Dropdown";
 import { cn } from "../utils";
+import { Avatar } from "./AvatarUpload";
 
 interface UserProfileProps {
   name?: string;
@@ -12,39 +13,31 @@ interface UserProfileProps {
 }
 
 export function UserProfile({
-  name = "Marcus Reid",
-  role = "Fleet Manager",
+  name: initialName = "Marcus Reid",
+  role: initialRole = "Fleet Manager",
 }: UserProfileProps) {
   const [open, setOpen] = useState(false);
-  const [avatar, setAvatar] = useState<string | null>(null);
+  const [name, setName] = useState<string>(initialName);
+  const [role, setRole] = useState<string>(initialRole);
 
   useEffect(() => {
-    // Read avatar from localStorage on mount
-    const saved = localStorage.getItem("user_avatar");
-    if (saved) setAvatar(saved);
-
-    // Listener to update avatar in header when settings change it
-    const handleStorageChange = () => {
-      const updated = localStorage.getItem("user_avatar");
-      setAvatar(updated);
+    const updateProfile = () => {
+      const savedName = localStorage.getItem("user_name");
+      const savedRole = localStorage.getItem("user_role");
+      setName(savedName || initialName);
+      setRole(savedRole || initialRole);
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    // Custom event listener for same-page updates
-    window.addEventListener("avatar_updated", handleStorageChange);
+    updateProfile();
+
+    window.addEventListener("profile_updated", updateProfile);
+    window.addEventListener("storage", updateProfile);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("avatar_updated", handleStorageChange);
+      window.removeEventListener("profile_updated", updateProfile);
+      window.removeEventListener("storage", updateProfile);
     };
-  }, []);
-
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  }, [initialName, initialRole]);
 
   return (
     <div className="flex items-center gap-1">
@@ -61,17 +54,7 @@ export function UserProfile({
           onClick={() => setOpen((o) => !o)}
           className="flex items-center gap-2.5 hover:bg-secondary rounded-lg px-2 py-1.5 transition-colors"
         >
-          {avatar ? (
-            <img
-              src={avatar}
-              alt={name}
-              className="w-8 h-8 rounded-full object-cover shrink-0 border border-border"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm shrink-0">
-              {initials}
-            </div>
-          )}
+          <Avatar name={name} size="sm" />
           <div className="text-left hidden sm:block">
             <p className="text-sm font-medium text-foreground leading-none">
               {name}
