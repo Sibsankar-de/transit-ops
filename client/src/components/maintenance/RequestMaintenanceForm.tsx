@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 
 export const requestSchema = z.object({
-  vehicleId: z.string().min(1, "Vehicle is required"),
+  vehicleId: z.string().uuid("vehicleId must be a valid UUID"),
   type: z.string().min(1, "Service type is required"),
   description: z.string().min(5, "Description must be at least 5 characters"),
   date: z.string().min(1, "Scheduled date is required"),
@@ -21,6 +21,7 @@ export type RequestFormValues = z.infer<typeof requestSchema>;
 
 interface RequestMaintenanceFormProps {
   onSubmit: (data: RequestFormValues) => void;
+  onCancel?: () => void;
   vehicles: { id: string; registration: string; make: string; model: string }[];
   isSubmitting?: boolean;
 }
@@ -35,6 +36,7 @@ const SERVICE_TYPES = [
 
 export function RequestMaintenanceForm({
   onSubmit,
+  onCancel,
   vehicles,
   isSubmitting = false,
 }: RequestMaintenanceFormProps) {
@@ -79,9 +81,7 @@ export function RequestMaintenanceForm({
   }));
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-xl bg-card rounded-xl border border-border p-6">
-      <h2 className="text-lg font-bold text-foreground mb-4">Request Maintenance Service</h2>
-
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
       <div className="space-y-4">
         <div>
           <Label htmlFor="vehicleId" required>
@@ -94,12 +94,8 @@ export function RequestMaintenanceForm({
             onChange={(val) =>
               setValue("vehicleId", val, { shouldValidate: true })
             }
+            error={errors.vehicleId?.message}
           />
-          {errors.vehicleId && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.vehicleId.message}
-            </p>
-          )}
         </div>
 
         <div>
@@ -111,10 +107,8 @@ export function RequestMaintenanceForm({
             value={selectedType}
             options={SERVICE_TYPES}
             onChange={(val) => setValue("type", val, { shouldValidate: true })}
+            error={errors.type?.message}
           />
-          {errors.type && (
-            <p className="text-red-500 text-xs mt-1">{errors.type.message}</p>
-          )}
         </div>
 
         <div>
@@ -143,12 +137,9 @@ export function RequestMaintenanceForm({
             <Input
               id="date"
               type="date"
-              isInvalid={!!errors.date}
+              error={errors.date?.message}
               {...registerInput(register("date"))}
             />
-            {errors.date && (
-              <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>
-            )}
           </div>
 
           <div>
@@ -156,20 +147,20 @@ export function RequestMaintenanceForm({
             <Input
               id="mechanic"
               placeholder="Optional"
-              isInvalid={!!errors.mechanic}
+              error={errors.mechanic?.message}
               {...registerInput(register("mechanic"))}
             />
-            {errors.mechanic && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.mechanic.message}
-              </p>
-            )}
           </div>
         </div>
       </div>
 
-      <div className="pt-2">
-        <Button variant="primary" type="submit" loading={isSubmitting} className="w-full py-2.5">
+      <div className="flex justify-end gap-3 pt-4 border-t border-border">
+        {onCancel && (
+          <Button variant="outline" type="button" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+        <Button variant="primary" type="submit" loading={isSubmitting}>
           Submit Request
         </Button>
       </div>

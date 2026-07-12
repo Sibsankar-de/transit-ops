@@ -1,60 +1,74 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { Controller, useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Select } from "@/components/ui/Select";
+import { useLoginMutation } from "@/store/slices/usersApiSlice";
 
-const roles = [
-  {
-    key: "fleet-manager",
-    value: "Fleet Manager",
-  },
-  {
-    key: "dispatcher",
-    value: "Dispatcher",
-  },
-  {
-    key: "safety-officer",
-    value: "Safety Officer",
-  },
-  {
-    key: "financial-analyst",
-    value: "Financial Analyst",
-  },
-];
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
 
-type SignInFormData = {
-  email: string;
-  password: string;
-  role: string;
-};
+type SignInFormData = z.infer<typeof loginSchema>;
 
 export const SignInForm = () => {
+  const router = useRouter();
+  const [login, { isLoading }] = useLoginMutation();
+
   const {
     register,
-    control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignInFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
-      role: "",
     },
   });
 
+  useEffect(() => {
+    // If already logged in, redirect to dashboard
+    if (typeof window !== "undefined" && localStorage.getItem("user_name")) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
+
   const onSubmit = async (data: SignInFormData) => {
-    console.log(data);
+    try {
+      const response = await login({
+        email: data.email,
+        password: data.password,
+      }).unwrap();
+
+      if (response.success && response.data) {
+        const user = response.data;
+        localStorage.setItem("user_name", user.name);
+        localStorage.setItem("user_role", user.role?.name || "Fleet Manager");
+        localStorage.setItem("user_email", user.email);
+        localStorage.setItem("user_id", user.id);
+
+        // Notify other components (like UserProfile)
+        window.dispatchEvent(new Event("profile_updated"));
+
+        router.replace("/dashboard");
+      }
+    } catch (err: any) {
+      alert(err?.data?.message || "Invalid email or password");
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="mt-10 space-y-6">
       <div>
         <Label htmlFor="email">Email address</Label>
-
         <Input
           id="email"
           type="email"
@@ -66,30 +80,12 @@ export const SignInForm = () => {
 
       <div>
         <Label htmlFor="password">Password</Label>
-
         <Input
           id="password"
           type="password"
           placeholder="Enter your password"
           error={errors.password?.message}
           {...register("password")}
-        />
-      </div>
-
-      <div>
-        <Label>Role</Label>
-
-        <Controller
-          name="role"
-          control={control}
-          render={({ field, fieldState }) => (
-            <Select
-              {...field}
-              placeholder="Select role"
-              options={roles}
-              error={fieldState.error?.message}
-            />
-          )}
         />
       </div>
 
@@ -104,7 +100,7 @@ export const SignInForm = () => {
 
       <Button
         type="submit"
-        loading={isSubmitting}
+        loading={isLoading}
         className="w-full justify-center py-3 text-base font-semibold"
       >
         Sign In

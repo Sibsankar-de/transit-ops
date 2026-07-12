@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ColumnDef, SortingState, PaginationState } from "@tanstack/react-table";
+import {
+  ColumnDef,
+  SortingState,
+  PaginationState,
+} from "@tanstack/react-table";
 import { FleetStatus } from "@/enums/fleetStatus.enum";
 import { DataTable } from "@/components/ui/DataTable";
 import { FleetStatusBadge } from "@/components/ui/FleetStatusBadge";
@@ -147,7 +151,9 @@ export default function VehicleRegistryPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
-  const [selectedStatusSummary, setSelectedStatusSummary] = useState<string | null>(null);
+  const [selectedStatusSummary, setSelectedStatusSummary] = useState<
+    string | null
+  >(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
@@ -162,10 +168,18 @@ export default function VehicleRegistryPage() {
   // Status Summary Counts
   const counts = useMemo(() => {
     return {
-      [FleetStatus.AVAILABLE]: vehicles.filter((v) => v.status === FleetStatus.AVAILABLE).length,
-      [FleetStatus.ON_TRIP]: vehicles.filter((v) => v.status === FleetStatus.ON_TRIP).length,
-      [FleetStatus.IN_SHOP]: vehicles.filter((v) => v.status === FleetStatus.IN_SHOP).length,
-      [FleetStatus.RETIRED]: vehicles.filter((v) => v.status === FleetStatus.RETIRED).length,
+      [FleetStatus.AVAILABLE]: vehicles.filter(
+        (v) => v.status === FleetStatus.AVAILABLE,
+      ).length,
+      [FleetStatus.ON_TRIP]: vehicles.filter(
+        (v) => v.status === FleetStatus.ON_TRIP,
+      ).length,
+      [FleetStatus.IN_SHOP]: vehicles.filter(
+        (v) => v.status === FleetStatus.IN_SHOP,
+      ).length,
+      [FleetStatus.RETIRED]: vehicles.filter(
+        (v) => v.status === FleetStatus.RETIRED,
+      ).length,
     };
   }, [vehicles]);
 
@@ -178,11 +192,18 @@ export default function VehicleRegistryPage() {
         v.make.toLowerCase().includes(search.toLowerCase()) ||
         v.model.toLowerCase().includes(search.toLowerCase());
 
-      const matchesStatusDropdown = statusFilter === "" || v.status === statusFilter;
-      const matchesStatusSummary = selectedStatusSummary === null || v.status === selectedStatusSummary;
+      const matchesStatusDropdown =
+        statusFilter === "" || v.status === statusFilter;
+      const matchesStatusSummary =
+        selectedStatusSummary === null || v.status === selectedStatusSummary;
       const matchesType = typeFilter === "" || v.type === typeFilter;
 
-      return matchesSearch && matchesStatusDropdown && matchesStatusSummary && matchesType;
+      return (
+        matchesSearch &&
+        matchesStatusDropdown &&
+        matchesStatusSummary &&
+        matchesType
+      );
     });
   }, [vehicles, search, statusFilter, selectedStatusSummary, typeFilter]);
 
@@ -286,16 +307,6 @@ export default function VehicleRegistryPage() {
               variant="outline"
               className="p-1.5! h-10 w-10 flex items-center justify-center border-border hover:bg-secondary"
               onClick={() => {
-                alert(`View details for ${row.original.registration}`);
-              }}
-              aria-label="View Details"
-            >
-              <Eye size={15} />
-            </Button>
-            <Button
-              variant="outline"
-              className="p-1.5! h-10 w-10 flex items-center justify-center border-border hover:bg-secondary"
-              onClick={() => {
                 setSelectedVehicle(row.original);
                 setEditModalOpen(true);
               }}
@@ -341,8 +352,8 @@ export default function VehicleRegistryPage() {
               acqCost: data.acqCost,
               status: data.status,
             }
-          : v
-      )
+          : v,
+      ),
     );
     setEditModalOpen(false);
     setSelectedVehicle(null);
@@ -365,8 +376,8 @@ export default function VehicleRegistryPage() {
           <Input
             placeholder="Search by reg, make, model..."
             value={search}
-            onChange={(val) => {
-              setSearch(val);
+            onChange={(e: any) => {
+              setSearch(e.target.value);
               setPagination((prev) => ({ ...prev, pageIndex: 0 }));
             }}
             icon={<SearchIcon />}
@@ -425,10 +436,12 @@ export default function VehicleRegistryPage() {
             "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold transition-all cursor-pointer",
             selectedStatusSummary === FleetStatus.AVAILABLE
               ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
-              : "bg-card border-border text-muted-foreground hover:text-foreground"
+              : "bg-card border-border text-muted-foreground hover:text-foreground",
           )}
         >
-          <span className="text-emerald-400 font-bold">{counts[FleetStatus.AVAILABLE]}</span>
+          <span className="text-emerald-400 font-bold">
+            {counts[FleetStatus.AVAILABLE]}
+          </span>
           <span>Available</span>
         </button>
 
@@ -438,10 +451,12 @@ export default function VehicleRegistryPage() {
             "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold transition-all cursor-pointer",
             selectedStatusSummary === FleetStatus.ON_TRIP
               ? "bg-blue-500/20 border-blue-500 text-blue-400"
-              : "bg-card border-border text-muted-foreground hover:text-foreground"
+              : "bg-card border-border text-muted-foreground hover:text-foreground",
           )}
         >
-          <span className="text-blue-400 font-bold">{counts[FleetStatus.ON_TRIP]}</span>
+          <span className="text-blue-400 font-bold">
+            {counts[FleetStatus.ON_TRIP]}
+          </span>
           <span>On Trip</span>
         </button>
 
@@ -451,10 +466,12 @@ export default function VehicleRegistryPage() {
             "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold transition-all cursor-pointer",
             selectedStatusSummary === FleetStatus.IN_SHOP
               ? "bg-amber-500/20 border-amber-500 text-amber-400"
-              : "bg-card border-border text-muted-foreground hover:text-foreground"
+              : "bg-card border-border text-muted-foreground hover:text-foreground",
           )}
         >
-          <span className="text-amber-400 font-bold">{counts[FleetStatus.IN_SHOP]}</span>
+          <span className="text-amber-400 font-bold">
+            {counts[FleetStatus.IN_SHOP]}
+          </span>
           <span>In Shop</span>
         </button>
 
@@ -464,10 +481,12 @@ export default function VehicleRegistryPage() {
             "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold transition-all cursor-pointer",
             selectedStatusSummary === FleetStatus.RETIRED
               ? "bg-secondary border-muted-foreground text-foreground"
-              : "bg-card border-border text-muted-foreground hover:text-foreground"
+              : "bg-card border-border text-muted-foreground hover:text-foreground",
           )}
         >
-          <span className="text-muted-foreground font-bold">{counts[FleetStatus.RETIRED]}</span>
+          <span className="text-muted-foreground font-bold">
+            {counts[FleetStatus.RETIRED]}
+          </span>
           <span>Retired</span>
         </button>
       </div>
@@ -483,7 +502,9 @@ export default function VehicleRegistryPage() {
         onSortingChange={setSorting}
         emptyState={
           <div className="flex flex-col items-center justify-center p-12 text-center">
-            <p className="text-muted-foreground text-sm">No vehicles found matching filters.</p>
+            <p className="text-muted-foreground text-sm">
+              No vehicles found matching filters.
+            </p>
           </div>
         }
       />

@@ -4,9 +4,11 @@ import React, { forwardRef, useState } from "react";
 import { Eye, EyeOff, OctagonAlert } from "lucide-react";
 import { cn } from "../utils";
 
-export interface InputType extends React.ComponentProps<"input"> {
+export interface InputType extends Omit<React.ComponentProps<"input">, "onChange"> {
   icon?: React.ReactElement;
   error?: string;
+  isInvalid?: boolean;
+  onChange?: any;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputType>(
@@ -19,6 +21,7 @@ export const Input = forwardRef<HTMLInputElement, InputType>(
       disabled = false,
       icon,
       error,
+      isInvalid,
       ...props
     },
     ref,
@@ -26,7 +29,7 @@ export const Input = forwardRef<HTMLInputElement, InputType>(
     const [showPassword, setShowPassword] = useState(false);
 
     const isPassword = type === "password";
-    const isInvalid = Boolean(error);
+    const hasError = Boolean(error) || Boolean(isInvalid);
 
     return (
       <div className="w-full">
@@ -54,7 +57,7 @@ export const Input = forwardRef<HTMLInputElement, InputType>(
               "transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring",
               icon && "pl-10",
               isPassword && "pr-10",
-              isInvalid && "border-red-500 pr-10 focus:ring-red-500",
+              hasError && "border-red-500 pr-10 focus:ring-red-500",
               disabled &&
                 "cursor-not-allowed bg-secondary text-muted-foreground opacity-70",
               className,
@@ -76,7 +79,7 @@ export const Input = forwardRef<HTMLInputElement, InputType>(
             </button>
           )}
 
-          {isInvalid && !isPassword && (
+          {hasError && !isPassword && (
             <div className="absolute right-3">
               <OctagonAlert className="h-5 w-5 text-red-500" />
             </div>
