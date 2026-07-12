@@ -1,4 +1,7 @@
-export type SelectOptionType = { key: string; value: string } | string;
+export type SelectOptionType = {
+  key: string;
+  value: string;
+} | string;
 
 export type SelectType = {
   id?: string;
@@ -6,7 +9,9 @@ export type SelectType = {
   placeholder?: string;
   value?: string;
   options?: SelectOptionType[];
-  onChange?: (val: string) => void;
+  onChange?: (value: string) => void;
+  onBlur?: () => void;
+  error?: string;
   required?: boolean;
   disabled?: boolean;
   placeholderClass?: string;
