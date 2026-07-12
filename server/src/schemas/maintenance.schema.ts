@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { paginationQuerySchema } from "./pagination.schema";
+import { paginationQuerySchema, sortOrderSchema } from "./pagination.schema";
 import { MaintenanceStatus } from "../enums/maintenanceStatus.enum";
 
 export const createMaintenanceLogSchema = z.object({
@@ -24,12 +24,21 @@ export const updateMaintenanceLogSchema = z
     message: "At least one field must be provided to update",
   });
 
-export const listMaintenanceLogsSchema = z.object({
-  vehicleId: z.string().uuid("vehicleId must be a valid UUID").optional(),
-  status: z.nativeEnum(MaintenanceStatus).optional(),
-  dateFrom: z.coerce.date({ message: "Invalid dateFrom" }).optional(),
-  dateTo: z.coerce.date({ message: "Invalid dateTo" }).optional(),
-}).merge(paginationQuerySchema);
+const maintenanceSortFields = ["createdAt", "startDate", "cost"] as const;
+
+export const listMaintenanceLogsSchema = z
+  .object({
+    vehicleId: z.string().uuid("vehicleId must be a valid UUID").optional(),
+    status: z.nativeEnum(MaintenanceStatus).optional(),
+    dateFrom: z.coerce.date({ message: "Invalid dateFrom" }).optional(),
+    dateTo: z.coerce.date({ message: "Invalid dateTo" }).optional(),
+    search: z.string().optional(),
+    costMin: z.coerce.number().nonnegative().optional(),
+    costMax: z.coerce.number().nonnegative().optional(),
+    sortBy: z.enum(maintenanceSortFields).default("createdAt"),
+    sortOrder: sortOrderSchema,
+  })
+  .merge(paginationQuerySchema);
 
 export const vehicleMaintenanceCostSchema = z.object({
   dateFrom: z.coerce.date({ message: "Invalid dateFrom" }).optional(),

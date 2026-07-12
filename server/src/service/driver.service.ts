@@ -1,10 +1,15 @@
 import { StatusCodes } from "http-status-codes";
 import { prisma } from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
-import { CreateDriverInput, UpdateDriverInput, ListDriversQuery } from "../schemas/driver.schema";
+import {
+  CreateDriverInput,
+  UpdateDriverInput,
+  ListDriversQuery,
+} from "../schemas/driver.schema";
 import { toSafeDriver } from "../dto/driver.dto";
 import { DriverModel } from "../types/driver.types";
 import { PaginatedResponse } from "../types/pagination.types";
+import { Prisma } from "@prisma/client";
 
 export async function createDriver(
   data: CreateDriverInput,
@@ -53,13 +58,34 @@ export async function getDriverById(driverId: string): Promise<DriverModel> {
 export async function getAllDrivers(
   query: ListDriversQuery,
 ): Promise<PaginatedResponse<DriverModel>> {
+  const where: Prisma.DriverWhereInput = {};
+
+  if (query.status) where.status = query.status as any;
+  if (query.licenseCategory) {
+    where.licenseCategory = {
+      equals: query.licenseCategory,
+      mode: "insensitive",
+    };
+  }
+  if (query.search) {
+    where.OR = [
+      { licenseNumber: { contains: query.search, mode: "insensitive" } },
+      { user: { name: { contains: query.search, mode: "insensitive" } } },
+      { user: { email: { contains: query.search, mode: "insensitive" } } },
+    ];
+  }
+
   const skip = (query.page - 1) * query.limit;
+  const orderBy = { [query.sortBy]: query.sortOrder };
 
   const [total, drivers] = await prisma.$transaction([
-    prisma.driver.count(),
+    prisma.driver.count({ where }),
     prisma.driver.findMany({
+      where,
       skip,
       take: query.limit,
+      orderBy,
+      include: { user: true },
     }),
   ]);
 
@@ -84,7 +110,7 @@ export async function updateDriver(
 
   const updated = await prisma.driver.update({
     where: { id: driverId },
-    data,
+    data: data as any,
   });
 
   return toSafeDriver(updated as unknown as DriverModel);

@@ -126,8 +126,21 @@ export async function listFuelLogs(
     if (query.startDate) where.date.gte = query.startDate;
     if (query.endDate) where.date.lte = query.endDate;
   }
+  if (query.costMin !== undefined || query.costMax !== undefined) {
+    where.cost = {
+      ...(query.costMin !== undefined ? { gte: query.costMin } : {}),
+      ...(query.costMax !== undefined ? { lte: query.costMax } : {}),
+    };
+  }
+  if (query.litersMin !== undefined || query.litersMax !== undefined) {
+    where.liters = {
+      ...(query.litersMin !== undefined ? { gte: query.litersMin } : {}),
+      ...(query.litersMax !== undefined ? { lte: query.litersMax } : {}),
+    };
+  }
 
   const skip = (query.page - 1) * query.limit;
+  const orderBy = { [query.sortBy]: query.sortOrder };
 
   const [total, fuelLogs] = await prisma.$transaction([
     prisma.fuelLog.count({ where }),
@@ -135,7 +148,7 @@ export async function listFuelLogs(
       where,
       skip,
       take: query.limit,
-      orderBy: { date: "desc" },
+      orderBy,
       include: { vehicle: true, trip: true },
     }),
   ]);

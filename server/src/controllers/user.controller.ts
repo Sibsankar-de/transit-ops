@@ -13,6 +13,7 @@ import {
   loginSchema,
   updateUserSchema,
   updatePasswordSchema,
+  listUsersQuerySchema,
 } from "../schemas/user.schema";
 import {
   createUser,
@@ -20,6 +21,7 @@ import {
   logoutUser,
   updateUser,
   updatePassword,
+  getUsers,
 } from "../service/user.service";
 
 export const createUserHandler = asyncHandler(
@@ -80,6 +82,19 @@ export const updatePasswordHandler = asyncHandler(
       .status(StatusCodes.OK)
       .json(
         new ApiResponse(StatusCodes.OK, null, "Password updated successfully"),
+      );
+  },
+);
+
+export const getUsersHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const query = validateBody(listUsersQuerySchema, req.query);
+    const result = await getUsers(query);
+
+    return res
+      .status(StatusCodes.OK)
+      .json(
+        new ApiResponse(StatusCodes.OK, result, "Users fetched successfully"),
       );
   },
 );

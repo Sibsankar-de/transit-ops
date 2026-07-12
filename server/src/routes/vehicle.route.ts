@@ -4,12 +4,19 @@ import { requirePermission } from "../middlewares/rbac.middleware";
 import { Permission } from "../enums/permission.enum";
 import {
   createVehicleHandler,
+  getAllVehiclesHandler,
   updateVehicleHandler,
   deleteVehicleHandler,
 } from "../controllers/vehicle.controller";
 
 const router = Router();
 
+router.get(
+  "/",
+  verifyJWT,
+  requirePermission(Permission.VEHICLE_READ),
+  getAllVehiclesHandler,
+);
 router.post(
   "/create",
   verifyJWT,

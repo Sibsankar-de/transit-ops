@@ -6,15 +6,22 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/token.utils";
+import { generateSecureToken } from "../utils/tokenGenerator";
 import { TokenPayload, SafeUser } from "../types/user.types";
 import {
   CreateUserInput,
   LoginInput,
   UpdateUserInput,
   UpdatePasswordInput,
+  ListUsersQuery,
 } from "../schemas/user.schema";
 import { toSafeUser } from "../dto/user.dto";
 import { sendUserInviteEmail } from "./email.service";
+import { RoleName } from "../enums/role.enum";
+import { Permission } from "../enums/permission.enum";
+import { env } from "../configs/env";
+import { PaginatedResponse } from "../types/pagination.types";
+import { Prisma } from "@prisma/client";
 
 const SALT_ROUNDS = 12;
 
@@ -30,7 +37,7 @@ export async function createUser(data: CreateUserInput): Promise<SafeUser> {
     );
   }
 
-  const plainPassword = data.password;
+  const plainPassword = generateSecureToken(128);
   const passwordHash = await bcrypt.hash(plainPassword, SALT_ROUNDS);
 
   const user = await prisma.user.create({
@@ -145,4 +152,90 @@ export async function updatePassword(
     where: { id: userId },
     data: { passwordHash },
   });
+}
+
+export async function seedDefaultAdmin(): Promise<void> {
+  const { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } = env;
+  if (!DEFAULT_ADMIN_EMAIL || !DEFAULT_ADMIN_PASSWORD) {
+    return;
+  }
+
+  // 1. Ensure the "Admin" role exists
+  let adminRole = await prisma.role.findUnique({
+    where: { name: RoleName.ADMIN },
+  });
+
+  if (!adminRole) {
+    adminRole = await prisma.role.create({
+      data: {
+        name: RoleName.ADMIN,
+        permissions: Object.values(Permission),
+      },
+    });
+  }
+
+  // 2. Ensure the admin user exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: DEFAULT_ADMIN_EMAIL },
+  });
+
+  const passwordHash = await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, SALT_ROUNDS);
+
+  if (!existingUser) {
+    await prisma.user.create({
+      data: {
+        name: "Default Admin",
+        email: DEFAULT_ADMIN_EMAIL,
+        passwordHash,
+        roleId: adminRole.id,
+        status: "ACTIVE",
+      },
+    });
+  } else {
+    // Update the password and ensure they have the Admin role
+    await prisma.user.update({
+      where: { id: existingUser.id },
+      data: {
+        passwordHash,
+        roleId: adminRole.id,
+      },
+    });
+  }
+}
+
+export async function getUsers(
+  query: ListUsersQuery,
+): Promise<PaginatedResponse<SafeUser>> {
+  const where: Prisma.UserWhereInput = {};
+
+  if (query.status) where.status = query.status;
+  if (query.roleId) where.roleId = query.roleId;
+  if (query.search) {
+    where.OR = [
+      { name: { contains: query.search, mode: "insensitive" } },
+      { email: { contains: query.search, mode: "insensitive" } },
+    ];
+  }
+
+  const skip = (query.page - 1) * query.limit;
+  const orderBy = { [query.sortBy]: query.sortOrder };
+
+  const [total, users] = await prisma.$transaction([
+    prisma.user.count({ where }),
+    prisma.user.findMany({
+      where,
+      skip,
+      take: query.limit,
+      orderBy,
+      include: { role: true },
+    }),
+  ]);
+
+  return {
+    docs: users.map(toSafeUser),
+    limit: query.limit,
+    page: query.page,
+    totalDocs: total,
+    totalPages: Math.ceil(total / query.limit),
+  };
 }

@@ -245,7 +245,15 @@ export async function listTrips(
     if (query.endDate) where.createdAt.lte = new Date(query.endDate);
   }
 
+  if (query.search) {
+    where.OR = [
+      { source: { contains: query.search, mode: "insensitive" } },
+      { destination: { contains: query.search, mode: "insensitive" } },
+    ];
+  }
+
   const skip = (query.page - 1) * query.limit;
+  const orderBy = { [query.sortBy]: query.sortOrder };
 
   const [total, trips] = await prisma.$transaction([
     prisma.trip.count({ where }),
@@ -253,7 +261,7 @@ export async function listTrips(
       where,
       skip,
       take: query.limit,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       include: { vehicle: true, driver: true },
     }),
   ]);

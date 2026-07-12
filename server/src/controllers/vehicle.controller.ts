@@ -6,9 +6,11 @@ import { validateBody } from "../utils/validate.utils";
 import {
   createVehicleSchema,
   updateVehicleSchema,
+  listVehiclesQuerySchema,
 } from "../schemas/vehicle.schema";
 import {
   createVehicle,
+  getAllVehicles,
   updateVehicle,
   deleteVehicle,
 } from "../service/vehicle.service";
@@ -25,6 +27,23 @@ export const createVehicleHandler = asyncHandler(
           StatusCodes.CREATED,
           vehicle,
           "Vehicle created successfully",
+        ),
+      );
+  },
+);
+
+export const getAllVehiclesHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const query = validateBody(listVehiclesQuerySchema, req.query);
+    const result = await getAllVehicles(query);
+
+    return res
+      .status(StatusCodes.OK)
+      .json(
+        new ApiResponse(
+          StatusCodes.OK,
+          result,
+          "Vehicles fetched successfully",
         ),
       );
   },

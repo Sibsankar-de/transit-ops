@@ -8,10 +8,17 @@ import {
   logoutHandler,
   updateUserHandler,
   updatePasswordHandler,
+  getUsersHandler,
 } from "../controllers/user.controller";
 
 const router = Router();
 
+router.get(
+  "/",
+  verifyJWT,
+  requirePermission(Permission.USER_READ),
+  getUsersHandler,
+);
 router.post(
   "/create-user",
   verifyJWT,

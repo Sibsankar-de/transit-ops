@@ -34,4 +34,7 @@ export const env = {
 
   RABBITMQ_CONNECTION_URI: process.env.RABBITMQ_CONNECTION_URI,
   RABBITMQ_EMAIL_QUEUE: process.env.RABBITMQ_EMAIL_QUEUE || "email_queue",
+
+  DEFAULT_ADMIN_EMAIL: process.env.DEFAULT_ADMIN_EMAIL || "",
+  DEFAULT_ADMIN_PASSWORD: process.env.DEFAULT_ADMIN_PASSWORD || "",
 } as const;

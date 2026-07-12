@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { paginationQuerySchema } from "./pagination.schema";
+import { paginationQuerySchema, sortOrderSchema } from "./pagination.schema";
 
 export const createFuelLogSchema = z.object({
   vehicleId: z.uuid("Invalid vehicle ID"),
@@ -22,12 +22,22 @@ export const updateFuelLogSchema = z.object({
     .optional(),
 });
 
-export const listFuelLogsQuerySchema = z.object({
-  vehicleId: z.string().uuid("Invalid vehicle ID").optional(),
-  tripId: z.string().uuid("Invalid trip ID").optional(),
-  startDate: z.coerce.date().optional(),
-  endDate: z.coerce.date().optional(),
-}).merge(paginationQuerySchema);
+const fuelLogSortFields = ["date", "cost", "liters", "createdAt"] as const;
+
+export const listFuelLogsQuerySchema = z
+  .object({
+    vehicleId: z.string().uuid("Invalid vehicle ID").optional(),
+    tripId: z.string().uuid("Invalid trip ID").optional(),
+    startDate: z.coerce.date().optional(),
+    endDate: z.coerce.date().optional(),
+    costMin: z.coerce.number().nonnegative().optional(),
+    costMax: z.coerce.number().nonnegative().optional(),
+    litersMin: z.coerce.number().nonnegative().optional(),
+    litersMax: z.coerce.number().nonnegative().optional(),
+    sortBy: z.enum(fuelLogSortFields).default("date"),
+    sortOrder: sortOrderSchema,
+  })
+  .merge(paginationQuerySchema);
 
 export type CreateFuelLogInput = z.infer<typeof createFuelLogSchema>;
 export type UpdateFuelLogInput = z.infer<typeof updateFuelLogSchema>;
