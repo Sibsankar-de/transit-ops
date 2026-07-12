@@ -3,7 +3,8 @@ import { prisma } from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
 import { toSafeRole } from "../dto/role.dto";
 import { RoleModel } from "../types/role.types";
-import { CreateRoleInput, UpdateRoleInput } from "../schemas/role.schema";
+import { CreateRoleInput, UpdateRoleInput, ListRolesQuery } from "../schemas/role.schema";
+import { PaginatedResponse } from "../types/pagination.types";
 
 export async function createRole(data: CreateRoleInput): Promise<RoleModel> {
   const existing = await prisma.role.findUnique({ where: { name: data.name } });
@@ -19,9 +20,26 @@ export async function createRole(data: CreateRoleInput): Promise<RoleModel> {
   return toSafeRole(role as unknown as RoleModel);
 }
 
-export async function getRoles(): Promise<RoleModel[]> {
-  const roles = await prisma.role.findMany();
-  return roles.map((r) => toSafeRole(r as unknown as RoleModel));
+export async function getRoles(
+  query: ListRolesQuery,
+): Promise<PaginatedResponse<RoleModel>> {
+  const skip = (query.page - 1) * query.limit;
+
+  const [total, roles] = await prisma.$transaction([
+    prisma.role.count(),
+    prisma.role.findMany({
+      skip,
+      take: query.limit,
+    }),
+  ]);
+
+  return {
+    docs: roles.map((r) => toSafeRole(r as unknown as RoleModel)),
+    limit: query.limit,
+    page: query.page,
+    totalDocs: total,
+    totalPages: Math.ceil(total / query.limit),
+  };
 }
 
 export async function getRoleById(id: string): Promise<RoleModel> {

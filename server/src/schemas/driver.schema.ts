@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DriverStatus } from "../enums/driverStatus.enum";
+import { paginationQuerySchema } from "./pagination.schema";
 
 export const createDriverSchema = z.object({
   userId: z.uuid("Invalid userId"),
@@ -24,3 +25,6 @@ export const updateDriverSchema = z.object({
 
 export type CreateDriverInput = z.infer<typeof createDriverSchema>;
 export type UpdateDriverInput = z.infer<typeof updateDriverSchema>;
+
+export const listDriversQuerySchema = paginationQuerySchema;
+export type ListDriversQuery = z.infer<typeof listDriversQuerySchema>;

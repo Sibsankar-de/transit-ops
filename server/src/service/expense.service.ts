@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
 import { toSafeExpense } from "../dto/expense.dto";
 import { ExpenseModel } from "../types/expense.types";
+import { PaginatedResponse } from "../types/pagination.types";
 import {
   CreateExpenseInput,
   UpdateExpenseInput,
@@ -101,7 +102,9 @@ export async function getExpense(expenseId: string): Promise<ExpenseModel> {
   return toSafeExpense(expense);
 }
 
-export async function listExpenses(query: ListExpensesQuery) {
+export async function listExpenses(
+  query: ListExpensesQuery,
+): Promise<PaginatedResponse<ExpenseModel>> {
   const where: any = {};
   if (query.vehicleId) where.vehicleId = query.vehicleId;
   if (query.type) where.type = query.type;
@@ -125,13 +128,11 @@ export async function listExpenses(query: ListExpensesQuery) {
   ]);
 
   return {
-    data: expenses.map(toSafeExpense),
-    pagination: {
-      total,
-      page: query.page,
-      limit: query.limit,
-      totalPages: Math.ceil(total / query.limit),
-    },
+    docs: expenses.map(toSafeExpense),
+    limit: query.limit,
+    page: query.page,
+    totalDocs: total,
+    totalPages: Math.ceil(total / query.limit),
   };
 }
 

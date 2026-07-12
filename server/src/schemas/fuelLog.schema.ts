@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQuerySchema } from "./pagination.schema";
 
 export const createFuelLogSchema = z.object({
   vehicleId: z.uuid("Invalid vehicle ID"),
@@ -26,9 +27,7 @@ export const listFuelLogsQuerySchema = z.object({
   tripId: z.string().uuid("Invalid trip ID").optional(),
   startDate: z.coerce.date().optional(),
   endDate: z.coerce.date().optional(),
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().default(10),
-});
+}).merge(paginationQuerySchema);
 
 export type CreateFuelLogInput = z.infer<typeof createFuelLogSchema>;
 export type UpdateFuelLogInput = z.infer<typeof updateFuelLogSchema>;

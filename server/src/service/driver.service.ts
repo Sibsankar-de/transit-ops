@@ -1,9 +1,10 @@
 import { StatusCodes } from "http-status-codes";
 import { prisma } from "../lib/prisma";
 import { ApiError } from "../utils/ApiError";
-import { CreateDriverInput, UpdateDriverInput } from "../schemas/driver.schema";
+import { CreateDriverInput, UpdateDriverInput, ListDriversQuery } from "../schemas/driver.schema";
 import { toSafeDriver } from "../dto/driver.dto";
 import { DriverModel } from "../types/driver.types";
+import { PaginatedResponse } from "../types/pagination.types";
 
 export async function createDriver(
   data: CreateDriverInput,
@@ -49,9 +50,26 @@ export async function getDriverById(driverId: string): Promise<DriverModel> {
   return toSafeDriver(driver as unknown as DriverModel);
 }
 
-export async function getAllDrivers(): Promise<DriverModel[]> {
-  const drivers = await prisma.driver.findMany();
-  return drivers.map((d) => toSafeDriver(d as unknown as DriverModel));
+export async function getAllDrivers(
+  query: ListDriversQuery,
+): Promise<PaginatedResponse<DriverModel>> {
+  const skip = (query.page - 1) * query.limit;
+
+  const [total, drivers] = await prisma.$transaction([
+    prisma.driver.count(),
+    prisma.driver.findMany({
+      skip,
+      take: query.limit,
+    }),
+  ]);
+
+  return {
+    docs: drivers.map((d) => toSafeDriver(d as unknown as DriverModel)),
+    limit: query.limit,
+    page: query.page,
+    totalDocs: total,
+    totalPages: Math.ceil(total / query.limit),
+  };
 }
 
 export async function updateDriver(

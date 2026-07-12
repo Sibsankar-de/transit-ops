@@ -29,7 +29,9 @@ export async function createMaintenanceLog(
   data: CreateMaintenanceLogInput,
 ): Promise<MaintenanceLogModel> {
   return prisma.$transaction(async (tx) => {
-    const vehicle = await tx.vehicle.findUnique({ where: { id: data.vehicleId } });
+    const vehicle = await tx.vehicle.findUnique({
+      where: { id: data.vehicleId },
+    });
 
     if (!vehicle) {
       throw new NotFoundError(`Vehicle with id "${data.vehicleId}" not found`);
@@ -71,10 +73,14 @@ export async function closeMaintenanceLog(
   data: CloseMaintenanceLogInput,
 ): Promise<MaintenanceLogModel> {
   return prisma.$transaction(async (tx) => {
-    const log = await tx.maintenanceLog.findUnique({ where: { id: maintenanceLogId } });
+    const log = await tx.maintenanceLog.findUnique({
+      where: { id: maintenanceLogId },
+    });
 
     if (!log) {
-      throw new NotFoundError(`Maintenance log "${maintenanceLogId}" not found`);
+      throw new NotFoundError(
+        `Maintenance log "${maintenanceLogId}" not found`,
+      );
     }
 
     if (log.status !== MaintenanceStatus.OPEN) {
@@ -89,10 +95,14 @@ export async function closeMaintenanceLog(
       data: { status: MaintenanceStatus.CLOSED, endDate: data.endDate },
     });
 
-    const vehicle = await tx.vehicle.findUnique({ where: { id: log.vehicleId } });
+    const vehicle = await tx.vehicle.findUnique({
+      where: { id: log.vehicleId },
+    });
 
     if (!vehicle) {
-      throw new NotFoundError(`Associated vehicle "${log.vehicleId}" not found`);
+      throw new NotFoundError(
+        `Associated vehicle "${log.vehicleId}" not found`,
+      );
     }
 
     if (vehicle.status !== VehicleStatus.RETIRED) {
@@ -120,7 +130,9 @@ export async function updateMaintenanceLog(
   maintenanceLogId: string,
   data: UpdateMaintenanceLogInput,
 ): Promise<MaintenanceLogModel> {
-  const log = await prisma.maintenanceLog.findUnique({ where: { id: maintenanceLogId } });
+  const log = await prisma.maintenanceLog.findUnique({
+    where: { id: maintenanceLogId },
+  });
 
   if (!log) {
     throw new NotFoundError(`Maintenance log "${maintenanceLogId}" not found`);
@@ -185,10 +197,10 @@ export async function listMaintenanceLogs(
   ]);
 
   return {
-    data: logs.map(toSafeMaintenanceLog),
-    total,
-    page,
+    docs: logs.map(toSafeMaintenanceLog),
     limit,
+    page,
+    totalDocs: total,
     totalPages: Math.ceil(total / limit),
   };
 }

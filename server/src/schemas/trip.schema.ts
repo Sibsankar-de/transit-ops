@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQuerySchema } from "./pagination.schema";
 import { TripStatus } from "@prisma/client";
 
 const tripStatusValues = Object.values(TripStatus) as [string, ...string[]];
@@ -21,11 +22,9 @@ export const listTripsQuerySchema = z.object({
   status: z.enum(tripStatusValues).optional(),
   vehicleId: z.uuid("Invalid vehicle ID").optional(),
   driverId: z.uuid("Invalid driver ID").optional(),
-  startDate: z.iso.datetime({ precision: 3 }).optional(),
-  endDate: z.iso.datetime({ precision: 3 }).optional(),
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().default(10),
-});
+  startDate: z.string().datetime({ precision: 3 }).optional(),
+  endDate: z.string().datetime({ precision: 3 }).optional(),
+}).merge(paginationQuerySchema);
 
 export type CreateTripInput = z.infer<typeof createTripSchema>;
 export type CompleteTripInput = z.infer<typeof completeTripSchema>;

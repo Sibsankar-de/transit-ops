@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { validateBody } from "../utils/validate.utils";
-import { createRoleSchema, updateRoleSchema } from "../schemas/role.schema";
+import { createRoleSchema, updateRoleSchema, listRolesQuerySchema } from "../schemas/role.schema";
 import {
   createRole,
   getRoles,
@@ -26,13 +26,14 @@ export const createRoleHandler = asyncHandler(
 );
 
 export const getRolesHandler = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const roles = await getRoles();
+  async (req: Request, res: Response) => {
+    const query = validateBody(listRolesQuerySchema, req.query);
+    const result = await getRoles(query);
 
     return res
       .status(StatusCodes.OK)
       .json(
-        new ApiResponse(StatusCodes.OK, roles, "Roles fetched successfully"),
+        new ApiResponse(StatusCodes.OK, result, "Roles fetched successfully"),
       );
   },
 );

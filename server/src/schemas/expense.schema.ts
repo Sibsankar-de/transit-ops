@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ExpenseType } from "@prisma/client";
+import { paginationQuerySchema } from "./pagination.schema";
 
 const expenseTypeValues = Object.values(ExpenseType) as [string, ...string[]];
 
@@ -32,9 +33,7 @@ export const listExpensesQuerySchema = z.object({
   type: z.enum(expenseTypeValues).optional(),
   startDate: z.coerce.date().optional(),
   endDate: z.coerce.date().optional(),
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().default(10),
-});
+}).merge(paginationQuerySchema);
 
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>;
 export type UpdateExpenseInput = z.infer<typeof updateExpenseSchema>;

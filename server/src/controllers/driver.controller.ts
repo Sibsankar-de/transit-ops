@@ -6,6 +6,7 @@ import { validateBody } from "../utils/validate.utils";
 import {
   createDriverSchema,
   updateDriverSchema,
+  listDriversQuerySchema,
 } from "../schemas/driver.schema";
 import {
   createDriver,
@@ -45,15 +46,16 @@ export const getDriverByIdHandler = asyncHandler(
 );
 
 export const getAllDriversHandler = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const drivers = await getAllDrivers();
+  async (req: Request, res: Response) => {
+    const query = validateBody(listDriversQuerySchema, req.query);
+    const result = await getAllDrivers(query);
 
     return res
       .status(StatusCodes.OK)
       .json(
         new ApiResponse(
           StatusCodes.OK,
-          drivers,
+          result,
           "Drivers fetched successfully",
         ),
       );
