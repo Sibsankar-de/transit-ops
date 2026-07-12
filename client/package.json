@@ -19,6 +19,7 @@
     "react-dom": "19.2.4",
     "react-hook-form": "^7.81.0",
     "react-redux": "^9.3.0",
+    "react-tooltip": "^6.0.8",
     "zod": "^4.4.3"
   },
   "devDependencies": {
